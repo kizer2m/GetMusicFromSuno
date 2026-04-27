@@ -1,11 +1,11 @@
 @echo off
-chcp 65001 >nul 2>&1
-title Get Music — AI Music Generator
+title Get Music - AI Music Generator
 
-echo ╔══════════════════════════════════════════╗
-echo ║       Get Music — AI Music Generator     ║
-echo ║              Version 1.0.0               ║
-echo ╚══════════════════════════════════════════╝
+echo.
+echo  ==========================================
+echo        Get Music - AI Music Generator
+echo              Version 1.1.0
+echo  ==========================================
 echo.
 
 :: Check if Node.js is installed
@@ -61,7 +61,9 @@ if %RETRIES% geq 15 (
     exit /b 1
 )
 timeout /t 1 /nobreak >nul
-curl -s -o nul -w "%%{http_code}" http://localhost:3000 >nul 2>&1
+
+:: Try connecting to the server
+powershell -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:3000' -UseBasicParsing -TimeoutSec 2; exit 0 } catch { exit 1 }" >nul 2>&1
 if %ERRORLEVEL% equ 0 (
     goto server_ready
 )
@@ -72,6 +74,7 @@ goto wait_loop
 :: Small extra delay to ensure full initialization
 timeout /t 1 /nobreak >nul
 
+echo.
 echo [OK] Server is running at http://localhost:3000
 echo [OK] Tracks will be saved to: %~dp0done\
 echo.
@@ -81,14 +84,13 @@ echo [INFO] Opening browser...
 start "" "http://localhost:3000"
 
 echo.
-echo ════════════════════════════════════════════
+echo  ==========================================
 echo   Server is running. Press Ctrl+C to stop.
 echo   Tracks are saved to the "done" folder.
-echo ════════════════════════════════════════════
+echo  ==========================================
 echo.
 
-:: Keep window open — wait for server process
-:: Re-run node in foreground so Ctrl+C works
+:: Kill the background node and re-run in foreground so Ctrl+C works
 taskkill /f /im "node.exe" >nul 2>&1
 timeout /t 1 /nobreak >nul
 node server.js
