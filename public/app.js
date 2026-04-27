@@ -37,6 +37,7 @@
     countPlus: $('#count-plus'),
     btnGenerate: $('#btn-generate'),
     btnReset: $('#btn-reset'),
+    modelSelect: $('#model-select'),
     // Progress
     progressCounter: $('#progress-counter'),
     progressBarFill: $('#progress-bar-fill'),
@@ -206,7 +207,7 @@
         const res = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt }),
+          body: JSON.stringify({ prompt, model: DOM.modelSelect.value }),
         });
         const json = await res.json();
 
@@ -399,6 +400,7 @@
     // Clear UI
     DOM.promptInput.value = '';
     DOM.songCount.value = '1';
+    DOM.modelSelect.value = 'V5_5';
     DOM.playlistList.innerHTML = '';
     DOM.playlistEmpty.classList.remove('hidden');
     DOM.trackCount.textContent = '0 tracks';

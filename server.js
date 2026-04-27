@@ -67,7 +67,7 @@ app.post('/api/generate', async (req, res) => {
       prompt: prompt || '',
       customMode: customMode || false,
       instrumental: instrumental || false,
-      model: model || 'V4_5ALL',
+      model: model || 'V5_5',
       callBackUrl: 'https://example.com/callback',
     };
     if (title) payload.title = title;
