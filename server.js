@@ -1,7 +1,7 @@
 /**
  * Get Music - Suno AI Music Generator
  * Backend server (Express.js)
- * Version: 1.0.0
+ * Version: 1.1.0
  */
 
 require('dotenv').config();
@@ -105,6 +105,50 @@ app.get('/api/status/:taskId', async (req, res) => {
   }
 });
 
+// Initiate WAV conversion for a completed audio
+app.post('/api/wav/generate', async (req, res) => {
+  try {
+    const { taskId, audioId } = req.body;
+    if (!taskId && !audioId) {
+      return res.status(400).json({ success: false, error: 'Missing taskId or audioId' });
+    }
+
+    const payload = { callBackUrl: 'https://example.com/callback' };
+    if (taskId) payload.taskId = taskId;
+    if (audioId) payload.audioId = audioId;
+
+    const result = await apiFetch('/wav/generate', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    if (result.code === 200) {
+      return res.json({ success: true, wavTaskId: result.data?.taskId || result.data });
+    }
+    return res.status(400).json({ success: false, error: result.msg || 'WAV generation failed' });
+  } catch (err) {
+    console.error('[WAV Generate Error]', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Check WAV conversion status
+app.get('/api/wav/status/:taskId', async (req, res) => {
+  try {
+    const result = await apiFetch(`/wav/record-info?taskId=${req.params.taskId}`, {
+      method: 'GET',
+    });
+
+    if (result.code === 200) {
+      return res.json({ success: true, data: result.data });
+    }
+    return res.status(400).json({ success: false, error: result.msg || 'WAV status check failed' });
+  } catch (err) {
+    console.error('[WAV Status Error]', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Get account balance / credits
 app.get('/api/balance', async (req, res) => {
   try {
@@ -129,7 +173,10 @@ app.get('/api/proxy-audio', async (req, res) => {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Upstream ${response.status}`);
 
-    res.setHeader('Content-Type', response.headers.get('content-type') || 'audio/mpeg');
+    // Detect content type — prefer WAV when applicable
+    const upstreamType = response.headers.get('content-type') || '';
+    const isWav = url.includes('.wav') || upstreamType.includes('wav');
+    res.setHeader('Content-Type', isWav ? 'audio/wav' : (upstreamType || 'audio/mpeg'));
     res.setHeader('Accept-Ranges', 'bytes');
 
     const arrayBuffer = await response.arrayBuffer();
@@ -148,7 +195,9 @@ app.post('/api/save-track', async (req, res) => {
 
     const safeName = sanitizeFilename(title || 'track');
     const shortId = (id || '').slice(0, 8);
-    const filename = `${safeName}_${shortId}.mp3`;
+    const isWav = url.includes('.wav');
+    const ext = isWav ? '.wav' : '.mp3';
+    const filename = `${safeName}_${shortId}${ext}`;
     const filepath = path.join(DONE_DIR, filename);
 
     // Check if already saved
@@ -178,7 +227,7 @@ app.post('/api/save-track', async (req, res) => {
 app.get('/api/saved-tracks', (req, res) => {
   try {
     const files = fs.readdirSync(DONE_DIR)
-      .filter(f => f.endsWith('.mp3'))
+      .filter(f => f.endsWith('.wav') || f.endsWith('.mp3'))
       .map(f => ({
         filename: f,
         size: fs.statSync(path.join(DONE_DIR, f)).size,

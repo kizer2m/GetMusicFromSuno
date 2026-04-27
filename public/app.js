@@ -1,6 +1,6 @@
 /**
  * Get Music — Frontend Application Logic
- * Version: 1.0.0
+ * Version: 1.1.0
  *
  * Handles: Suno API generation, polling, playlist management,
  *          audio playback (mini-player), auto-save to done/, and UI state.
@@ -50,6 +50,8 @@
     btnPrev: $('#btn-prev'),
     btnPlay: $('#btn-play'),
     btnNext: $('#btn-next'),
+    btnRewind: $('#btn-rewind'),
+    btnForward: $('#btn-forward'),
     btnVolume: $('#btn-volume'),
     iconPlay: $('#icon-play'),
     iconPause: $('#icon-pause'),
@@ -60,10 +62,18 @@
     playerArt: $('#player-art'),
     playerCurrentTime: $('#player-current-time'),
     playerDuration: $('#player-duration'),
-    playerSeek: $('#player-seek'),
+    formatBadge: $('#player-format-badge'),
+    // Custom seek bar
+    seekContainer: $('#seek-bar-container'),
+    seekTrack: $('#seek-bar-track'),
+    seekFill: $('#seek-bar-fill'),
+    seekThumb: $('#seek-bar-thumb'),
     // Balance
     balanceValue: $('#balance-value'),
   };
+
+  // Seek drag state
+  let isSeeking = false;
 
   // ========== INIT ==========
   function init() {
@@ -96,12 +106,18 @@
     DOM.btnNext.addEventListener('click', nextTrack);
     DOM.btnVolume.addEventListener('click', toggleMute);
 
-    // Seek
-    DOM.playerSeek.addEventListener('input', () => {
-      if (audio.duration) {
-        audio.currentTime = (DOM.playerSeek.value / 100) * audio.duration;
-      }
+    // Rewind / Forward 10s
+    DOM.btnRewind.addEventListener('click', () => {
+      if (audio.duration) audio.currentTime = Math.max(0, audio.currentTime - 10);
     });
+    DOM.btnForward.addEventListener('click', () => {
+      if (audio.duration) audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+    });
+
+    // Custom seek bar — mouse drag
+    DOM.seekContainer.addEventListener('mousedown', onSeekStart);
+    document.addEventListener('mousemove', onSeekMove);
+    document.addEventListener('mouseup', onSeekEnd);
 
     // Audio events
     audio.addEventListener('timeupdate', updateSeek);
@@ -111,6 +127,41 @@
     audio.addEventListener('ended', () => {
       nextTrack();
     });
+  }
+
+  // ========== SEEK BAR DRAG ==========
+  function getSeekPercent(e) {
+    const rect = DOM.seekTrack.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    return x / rect.width;
+  }
+
+  function onSeekStart(e) {
+    if (!audio.duration) return;
+    isSeeking = true;
+    DOM.seekContainer.classList.add('dragging');
+    const pct = getSeekPercent(e);
+    audio.currentTime = pct * audio.duration;
+    setSeekPosition(pct * 100);
+  }
+
+  function onSeekMove(e) {
+    if (!isSeeking || !audio.duration) return;
+    const pct = getSeekPercent(e);
+    audio.currentTime = pct * audio.duration;
+    setSeekPosition(pct * 100);
+  }
+
+  function onSeekEnd() {
+    if (!isSeeking) return;
+    isSeeking = false;
+    DOM.seekContainer.classList.remove('dragging');
+  }
+
+  function setSeekPosition(pct) {
+    DOM.seekFill.style.width = pct + '%';
+    DOM.seekThumb.style.left = pct + '%';
+    DOM.playerCurrentTime.textContent = formatTime(audio.currentTime);
   }
 
   // ========== BALANCE ==========
@@ -217,8 +268,8 @@
                 state.tracks[trackIdx].lyrics = first.prompt || first.lyric;
                 state.tracks[trackIdx].id = first.id || state.tracks[trackIdx].id;
 
-                // Auto-save first track
-                autoSaveTrack(trackIdx);
+                // Request WAV conversion then auto-save
+                requestWavConversion(trackIdx, taskId);
 
                 // Add additional tracks from the same task (Suno generates 2 per task)
                 for (let si = 1; si < sunoData.length; si++) {
@@ -239,8 +290,8 @@
                     state.tracks.push(extraTrack);
                     const newIdx = state.tracks.length - 1;
                     addTrackToPlaylist(extraTrack, newIdx);
-                    // Auto-save extra tracks
-                    if (extraTrack.audioUrl) autoSaveTrack(newIdx);
+                    // Request WAV for extra tracks too
+                    if (extraTrack.audioUrl) requestWavConversion(newIdx, taskId);
                   }
                 }
               } else {
@@ -358,7 +409,7 @@
     DOM.playerSubtitle.textContent = 'Get Music';
     DOM.playerCurrentTime.textContent = '0:00';
     DOM.playerDuration.textContent = '0:00';
-    DOM.playerSeek.value = 0;
+    setSeekPosition(0);
     DOM.playerArt.innerHTML = `
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M9 18V5l12-2v13"/>
@@ -422,6 +473,10 @@
       ? `<span class="playlist-item-saved" title="Saved to done/">💾</span>`
       : '';
 
+    const wavBadge = track.wavReady
+      ? `<span class="playlist-item-wav" title="WAV format">WAV</span>`
+      : '';
+
     return `
       <span class="playlist-item-index">${index + 1}</span>
       <div class="playlist-item-art">${artHTML}</div>
@@ -429,6 +484,7 @@
         <div class="playlist-item-title">${escapeHTML(track.title)}</div>
         <div class="playlist-item-meta">${escapeHTML(truncate(track.prompt, 40))}</div>
       </div>
+      ${wavBadge}
       ${savedBadge}
       <span class="playlist-item-status ${statusClass}">${statusLabel}</span>
     `;
@@ -530,10 +586,77 @@
   }
 
   function updateSeek() {
-    if (!audio.duration) return;
+    if (!audio.duration || isSeeking) return;
     const pct = (audio.currentTime / audio.duration) * 100;
-    DOM.playerSeek.value = pct;
-    DOM.playerCurrentTime.textContent = formatTime(audio.currentTime);
+    setSeekPosition(pct);
+  }
+
+  // ========== WAV CONVERSION ==========
+  async function requestWavConversion(trackIdx, taskId) {
+    const track = state.tracks[trackIdx];
+    if (!track) return;
+
+    try {
+      const audioId = track.id;
+      const res = await fetch('/api/wav/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskId, audioId }),
+      });
+      const json = await res.json();
+
+      if (json.success && json.wavTaskId) {
+        console.log(`[WAV] Conversion started for "${track.title}", wavTaskId: ${json.wavTaskId}`);
+        pollWavStatus(trackIdx, json.wavTaskId);
+      } else {
+        console.warn(`[WAV] Could not start conversion for "${track.title}": ${json.error}`);
+        // Fallback: save the MP3 version
+        autoSaveTrack(trackIdx);
+      }
+    } catch (err) {
+      console.error(`[WAV] Request failed for "${track.title}":`, err);
+      autoSaveTrack(trackIdx);
+    }
+  }
+
+  async function pollWavStatus(trackIdx, wavTaskId) {
+    const maxAttempts = 30; // ~5 minutes
+    for (let i = 0; i < maxAttempts; i++) {
+      await delay(10000); // poll every 10s
+
+      try {
+        const res = await fetch(`/api/wav/status/${wavTaskId}`);
+        const json = await res.json();
+
+        if (json.success && json.data) {
+          const status = json.data.status;
+
+          if (status === 'SUCCESS') {
+            // Extract WAV download URL
+            const wavUrl = json.data.response?.wavAudioUrl || json.data.response?.audioUrl || json.data.response?.url;
+            if (wavUrl && state.tracks[trackIdx]) {
+              console.log(`[WAV] ✅ Ready: "${state.tracks[trackIdx].title}"`);
+              state.tracks[trackIdx].audioUrl = wavUrl;
+              state.tracks[trackIdx].wavReady = true;
+              updateTrackInPlaylist(trackIdx);
+              autoSaveTrack(trackIdx);
+            }
+            return;
+          } else if (status === 'FAILED' || status === 'CREATE_TASK_FAILED') {
+            console.warn(`[WAV] Conversion failed for track ${trackIdx}`);
+            autoSaveTrack(trackIdx);
+            return;
+          }
+          // else still processing, continue polling
+        }
+      } catch {
+        // network error, keep trying
+      }
+    }
+
+    // Timeout — save MP3 fallback
+    console.warn(`[WAV] Timeout for track ${trackIdx}, saving MP3 fallback`);
+    autoSaveTrack(trackIdx);
   }
 
   // ========== PROGRESS ==========

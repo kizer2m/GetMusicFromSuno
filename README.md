@@ -4,7 +4,7 @@
 
 ## Version
 
-**1.0.0**
+**1.1.0**
 
 ## Features
 
@@ -12,8 +12,11 @@
 - **Batch Generation** — Generate multiple songs from one prompt
 - **Real-time Progress** — Live progress bar and status updates
 - **Built-in Playlist** — All generated tracks appear in a sleek playlist
-- **Mini Player** — Play, pause, skip, and seek through generated tracks
+- **WAV Format** — Automatic WAV conversion pipeline (MP3 fallback)
+- **Mini Player** — Play, pause, skip, rewind/forward 10s, and seek through tracks
+- **Interactive Seek Bar** — Full-width seek bar with mouse drag support
 - **Volume Control** — Toggle mute/unmute with one click
+- **Auto-Save** — Tracks automatically download to `done/` folder
 - **API Balance** — Monitor your remaining credits in the header
 
 ## Quick Start
@@ -22,7 +25,7 @@
 2. Create a `.env` file with your API key:
    ```
    SUNO_API_KEY=your_api_key_here
-   SUNO_API_BASE=https://api.kie.ai/api/v1
+   SUNO_API_BASE=https://api.sunoapi.org/api/v1
    PORT=3000
    ```
 3. Install dependencies and run:
@@ -43,13 +46,15 @@
 | Double-click track | Play selected track |
 | Play/Pause | Toggle playback |
 | Prev/Next | Switch between tracks |
+| Rewind/Forward | Skip ±10 seconds |
+| Seek bar | Click or drag to jump to any position |
 | Volume icon | Mute/unmute audio |
 
 ## Tech Stack
 
 - Node.js + Express.js (backend)
 - Vanilla HTML/CSS/JS (frontend)
-- Suno API via kie.ai
+- Suno API via sunoapi.org
 
 ## License
 
