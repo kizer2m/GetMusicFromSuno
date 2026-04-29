@@ -276,24 +276,7 @@
                 state.tracks[trackIdx].id = first.id || state.tracks[trackIdx].id;
                 if (!state.tracks[trackIdx].version) state.tracks[trackIdx].version = 'V1';
 
-                if (status === 'SUCCESS' && !state.tracks[trackIdx]._wavRequested) {
-                  // Full SUCCESS — trigger WAV or save MP3
-                  if (state.tracks[trackIdx].format === 'wav') {
-                    state.tracks[trackIdx]._wavRequested = true;
-                    setTimeout(() => requestWavConversion(trackIdx, taskId), 15000);
-                  } else if (!state.tracks[trackIdx].saved) {
-                    autoSaveTrack(trackIdx);
-                  }
-                } else if (status === 'FIRST_SUCCESS') {
-                  // Save MP3 immediately if format is MP3
-                  if (state.tracks[trackIdx].format !== 'wav' && !state.tracks[trackIdx].saved) {
-                    autoSaveTrack(trackIdx);
-                  }
-                  // Keep polling for full SUCCESS (needed for WAV)
-                  stillActive.push(taskId);
-                }
-
-                // Add additional tracks (only on first processing)
+                // Add additional tracks from sunoData (only once)
                 if (!alreadyProcessed) {
                   for (let si = 1; si < sunoData.length; si++) {
                     const extra = sunoData[si];
@@ -312,19 +295,40 @@
                     };
                     if (!state.tracks.find(t => t.id === extraTrack.id)) {
                       state.tracks.push(extraTrack);
-                      const newIdx = state.tracks.length - 1;
-                      addTrackToPlaylist(extraTrack, newIdx);
-                      if (extraTrack.audioUrl && status === 'SUCCESS') {
-                        if (state.tracks[trackIdx].format === 'wav') {
-                          const capturedIdx = newIdx;
-                          state.tracks[capturedIdx]._wavRequested = true;
-                          setTimeout(() => requestWavConversion(capturedIdx, taskId), 17000);
-                        } else {
-                          autoSaveTrack(newIdx);
-                        }
-                      }
+                      addTrackToPlaylist(extraTrack, state.tracks.length - 1);
                     }
                   }
+                }
+
+                // === SAVE / WAV LOGIC ===
+                if (status === 'SUCCESS') {
+                  // Full SUCCESS — save all tracks from this task
+                  if (state.tracks[trackIdx].format === 'wav') {
+                    // WAV: trigger conversion for all unsaved tracks
+                    state.tracks.forEach((t, idx) => {
+                      if ((t.taskId === taskId || t.taskId?.startsWith(taskId + '_sub_')) && !t._wavRequested) {
+                        t._wavRequested = true;
+                        const delayMs = idx === trackIdx ? 15000 : 17000;
+                        setTimeout(() => requestWavConversion(idx, taskId), delayMs);
+                      }
+                    });
+                  } else {
+                    // MP3: save all unsaved tracks from this task
+                    state.tracks.forEach((t, idx) => {
+                      if ((t.taskId === taskId || t.taskId?.startsWith(taskId + '_sub_')) && !t.saved && !t._saving && t.audioUrl) {
+                        t._saving = true;
+                        autoSaveTrack(idx);
+                      }
+                    });
+                  }
+                } else if (status === 'FIRST_SUCCESS') {
+                  // FIRST_SUCCESS — save V1 MP3 immediately (WAV waits for full SUCCESS)
+                  if (state.tracks[trackIdx].format !== 'wav' && !state.tracks[trackIdx].saved && !state.tracks[trackIdx]._saving) {
+                    state.tracks[trackIdx]._saving = true;
+                    autoSaveTrack(trackIdx);
+                  }
+                  // Keep polling — need full SUCCESS for extra tracks and WAV
+                  stillActive.push(taskId);
                 }
               } else {
                 state.tracks[trackIdx].status = 'success';
