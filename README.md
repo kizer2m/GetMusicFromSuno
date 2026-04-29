@@ -78,31 +78,24 @@
 git clone https://github.com/kizer2m/GetMusicFromSuno.git
 cd GetMusicFromSuno
 
-# 2. Create .env file
-cp .env.example .env
-# Edit .env and add your SUNO_API_KEY
-
-# 3. Install and run
-npm install
-npm run dev
-
-# 4. Open in browser
-# → http://localhost:3000
+# 2. Run the start script for your platform
 ```
-
-Or use the one-click start scripts:
 
 | Platform | Command |
 |----------|---------|
 | **Windows** | Double-click `start.bat` |
 | **macOS / Linux** | `chmod +x start.sh && ./start.sh` |
 
+> **First run:** The script will automatically create a `.env` file and open it in an editor.  
+> Paste your **Suno API key** (get one at [sunoapi.org](https://sunoapi.org)), save the file, and **re-run the script**.
+
 The start scripts automatically:
 - ✅ Verify Node.js and npm installation
+- ✅ Create `.env` with a template on first launch
 - ✅ Install missing dependencies
 - ✅ Validate `.env` configuration
 - ✅ Kill existing processes on port 3000
-- ✅ Start server and open browser
+- ✅ Start server and open browser at `http://localhost:3000`
 
 ---
 
