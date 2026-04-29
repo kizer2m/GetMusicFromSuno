@@ -101,13 +101,17 @@ The start scripts automatically:
 
 ## ⚙️ Configuration
 
-Create a `.env` file in the project root:
+The `.env` file is **created automatically** when you run `start.bat` (Windows) or `start.sh` (Linux/macOS) for the first time.
+
+If for some reason it was not created, create it **manually** in the project root with the following contents:
 
 ```env
 SUNO_API_KEY=your_api_key_here
 SUNO_API_BASE=https://api.sunoapi.org/api/v1
 PORT=3000
 ```
+
+Replace `your_api_key_here` with your actual API key from [sunoapi.org](https://sunoapi.org), then re-run the start script.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
