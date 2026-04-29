@@ -1,6 +1,6 @@
 /* =============================================
    GET MUSIC — Premium Design System
-   Version: 1.1.0
+   Version: 1.4.0
    ============================================= */
 
 /* ---------- CSS Variables ---------- */
@@ -53,6 +53,58 @@
   --transition-slow: 400ms var(--ease);
 }
 
+/* ---------- Light Theme Override ---------- */
+[data-theme="light"] {
+  --bg-primary: #f5f5fa;
+  --bg-secondary: #eeeef5;
+  --bg-panel: #ffffff;
+  --bg-panel-hover: #f0f0f8;
+  --bg-card: #e8e8f2;
+  --bg-input: #f0f0f8;
+  --bg-player: #ffffff;
+
+  --text-primary: #1a1a2e;
+  --text-secondary: #555577;
+  --text-muted: #8888aa;
+  --text-accent: #7c3aed;
+
+  --border: #d4d4e8;
+  --border-focus: #7c3aed;
+
+  --gradient-glow: linear-gradient(135deg, rgba(168, 85, 247, .1) 0%, rgba(99, 102, 241, .06) 100%);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, .1);
+  --shadow-glow: 0 0 20px rgba(168, 85, 247, .1);
+}
+
+[data-theme="light"] .logo-icon circle:nth-child(3) {
+  fill: #f5f5fa;
+}
+
+/* ---------- Theme Toggle Button ---------- */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.theme-toggle:hover {
+  color: var(--accent-purple);
+  border-color: var(--accent-purple);
+  background: var(--bg-panel-hover);
+  box-shadow: var(--shadow-glow);
+  transform: rotate(15deg);
+}
+
 /* ---------- Reset ---------- */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -74,6 +126,7 @@ body {
   display: grid;
   grid-template-rows: var(--header-h) 1fr var(--player-h);
   overflow: hidden;
+  transition: background-color var(--transition-slow), color var(--transition-slow);
 }
 
 button {
@@ -118,6 +171,7 @@ ul { list-style: none; }
   flex-shrink: 0;
   z-index: 100;
   backdrop-filter: blur(16px);
+  transition: background-color var(--transition-slow), border-color var(--transition-slow);
 }
 
 .header-left { display: flex; align-items: center; gap: 12px; }
@@ -183,11 +237,13 @@ ul { list-style: none; }
   flex: 1 1 55%;
   border-right: 1px solid var(--border);
   background: var(--bg-secondary);
+  transition: background-color var(--transition-slow), border-color var(--transition-slow);
 }
 
 .panel-right {
   flex: 1 1 45%;
   background: var(--bg-primary);
+  transition: background-color var(--transition-slow);
 }
 
 .panel-header {
@@ -623,6 +679,7 @@ ul { list-style: none; }
   border-top: 1px solid var(--border);
   z-index: 100;
   grid-row: 3;
+  transition: background-color var(--transition-slow), border-color var(--transition-slow);
 }
 
 /* Seek bar on top of player */

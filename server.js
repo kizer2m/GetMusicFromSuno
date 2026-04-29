@@ -1,7 +1,6 @@
 /**
  * Get Music From Suno — AI Music Generator
  * Backend server (Express.js)
- * Version: 1.3.0
  */
 
 require('dotenv').config();
@@ -11,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
+const pkg = require('./package.json');
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.SUNO_API_KEY;
 const API_BASE = process.env.SUNO_API_BASE || 'https://api.sunoapi.org/api/v1';
@@ -316,7 +316,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   drawBox([
-    `${C.bold}${C.cyan}🎵 Get Music From Suno v1.3.0${C.reset}`,
+    `${C.bold}${C.cyan}\uD83C\uDFB5 Get Music From Suno v${pkg.version}${C.reset}`,
     ``,
     `${C.green}Server${C.reset}     http://localhost:${PORT}`,
     `${C.blue}API Base${C.reset}   ${API_BASE}`,

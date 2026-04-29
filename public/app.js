@@ -1,6 +1,6 @@
 /**
  * Get Music — Frontend Application Logic
- * Version: 1.1.0
+ * Version: 1.4.0
  *
  * Handles: Suno API generation, polling, playlist management,
  *          audio playback (mini-player), auto-save to done/, and UI state.
@@ -72,6 +72,10 @@
     seekThumb: $('#seek-bar-thumb'),
     // Balance
     balanceValue: $('#balance-value'),
+    // Theme
+    btnTheme: $('#btn-theme'),
+    iconSun: $('#icon-sun'),
+    iconMoon: $('#icon-moon'),
   };
 
   // Seek drag state
@@ -79,6 +83,7 @@
 
   // ========== INIT ==========
   function init() {
+    initTheme();
     bindEvents();
     fetchBalance();
     updateProgressUI();
@@ -101,6 +106,9 @@
 
     // Reset
     DOM.btnReset.addEventListener('click', resetAll);
+
+    // Theme toggle
+    DOM.btnTheme.addEventListener('click', toggleTheme);
 
     // Player
     DOM.btnPlay.addEventListener('click', togglePlay);
@@ -788,6 +796,30 @@
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+  }
+
+  // ========== THEME ==========
+  function initTheme() {
+    const saved = localStorage.getItem('theme') || 'dark';
+    applyTheme(saved);
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'light') {
+      DOM.iconSun.classList.add('hidden');
+      DOM.iconMoon.classList.remove('hidden');
+    } else {
+      DOM.iconSun.classList.remove('hidden');
+      DOM.iconMoon.classList.add('hidden');
+    }
   }
 
   // ========== START ==========

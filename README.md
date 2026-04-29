@@ -4,7 +4,7 @@
 
 ## Version
 
-**1.4.0**
+**1.5.0**
 
 ## Features
 
@@ -22,6 +22,7 @@
 - **Versioned Filenames** — Multi-version tracks saved with V1, V2, V3... suffixes
 - **API Balance** — Monitor your remaining credits in the header
 - **Styled Console** — Beautiful server logs with colors, icons, and progress indicators
+- **Dark/Light Theme** — Toggle between dark and light themes (persisted in browser)
 
 ## Prerequisites
 
@@ -93,6 +94,13 @@ chmod +x start.sh
 | Volume icon | Mute/unmute audio |
 
 ## Changelog
+
+### v1.5.0
+- Dark/Light theme toggle with sun/moon icon button
+- Theme persists across sessions (localStorage)
+- Dynamic version display from package.json
+- Fixed version mismatch in UI
+- Smooth CSS transitions on theme switch
 
 ### v1.4.0
 - Versioned filenames: tracks saved as `TrackName_V1.wav`, `TrackName_V2.wav`
