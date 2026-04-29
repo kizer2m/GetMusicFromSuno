@@ -4,7 +4,7 @@
 This is **Get Music From Suno** — a web-based Suno AI music generator application.
 
 ## Version
-**1.2.0**
+**1.2.1**
 
 ## Quick Facts
 - Language: JavaScript (Node.js backend + Vanilla frontend)
@@ -21,9 +21,11 @@ This is **Get Music From Suno** — a web-based Suno AI music generator applicat
 | `public/style.css` | Design system, dark theme |
 | `public/app.js` | All frontend logic |
 | `.env` | `SUNO_API_KEY`, `SUNO_API_BASE`, `PORT` |
+| `start.bat` | Windows start script with .env validation |
+| `start.sh` | Linux/macOS start script with .env validation |
 
 ## Rules
-1. **Versioning:** Semantic versioning (MAJOR.MINOR.PATCH). Current: `1.2.0`
+1. **Versioning:** Semantic versioning (MAJOR.MINOR.PATCH). Current: `1.2.1`
 2. **API Key:** Always stored in `.env`, referenced via `process.env`
 3. **No global JS:** Frontend uses IIFE pattern
 4. **CSS Variables:** All colors/sizes defined as CSS custom properties in `:root`
@@ -36,6 +38,10 @@ npm install
 npm run dev
 # Open http://localhost:3000
 ```
+
+Or use the start scripts:
+- **Windows:** `start.bat`
+- **Linux/macOS:** `./start.sh`
 
 ## Feature Map
 - [x] Text prompt input

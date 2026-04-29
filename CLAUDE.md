@@ -5,7 +5,7 @@
 It connects to the Suno API via [sunoapi.org](https://api.sunoapi.org) to generate music from text prompts.
 
 ## Version
-**1.2.0**
+**1.2.1**
 
 ## Tech Stack
 - **Backend:** Node.js + Express.js
@@ -15,15 +15,18 @@ It connects to the Suno API via [sunoapi.org](https://api.sunoapi.org) to genera
 
 ## Architecture
 ```
-Get Music/
+Get Music From Suno/
   .env                 # API key + config (not committed)
   .gitignore
   package.json
   server.js            # Express backend — proxies API calls
+  start.bat            # Windows start script (validates .env)
+  start.sh             # Linux/macOS start script (validates .env)
   public/
     index.html          # SPA entry point
     style.css           # Premium dark theme design system
     app.js              # Frontend logic (generation, playlist, player)
+  done/                 # Auto-saved tracks (created by start scripts)
   CLAUDE.md             # This file
   GEMINI.md             # AI assistant guidelines
   README.md             # User documentation

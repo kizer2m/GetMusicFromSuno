@@ -4,7 +4,7 @@
 
 ## Version
 
-**1.2.0**
+**1.2.1**
 
 ## Features
 
@@ -14,8 +14,8 @@
 - **Built-in Playlist** — All generated tracks appear in a sleek playlist
 - **Format Selector** — Choose WAV (lossless) or MP3 (compressed) download format
 - **WAV Format** — Automatic WAV conversion pipeline (MP3 fallback)
-- **Mini Player** — Play, pause, skip, rewind/forward 10s, and seek through tracks
 - **Dynamic Format Badge** — Shows WAV or MP3 in player and playlist per track
+- **Mini Player** — Play, pause, skip, rewind/forward 10s, and seek through tracks
 - **Interactive Seek Bar** — Full-width seek bar with mouse drag support
 - **Volume Control** — Toggle mute/unmute with one click
 - **Auto-Save** — Tracks automatically download to `done/` folder
@@ -37,12 +37,43 @@
    ```
 4. Open [http://localhost:3000](http://localhost:3000)
 
+## Start Scripts
+
+The project includes ready-to-use start scripts that automatically:
+- ✅ Create the `done/` folder for saved tracks
+- ✅ Check for `.env` file and create a template if missing
+- ✅ Validate that `SUNO_API_KEY` is set (not a placeholder)
+- ✅ Warn if `SUNO_API_BASE` or `PORT` are missing
+- ✅ Install `node_modules` if needed
+- ✅ Start the server and open the browser
+
+### Windows
+```cmd
+start.bat
+```
+Double-click `start.bat` or run from Command Prompt.
+
+### macOS / Linux
+```bash
+chmod +x start.sh
+./start.sh
+```
+
+## .env Configuration
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SUNO_API_KEY` | ✅ Yes | — | Your API key from [sunoapi.org](https://sunoapi.org) |
+| `SUNO_API_BASE` | No | `https://api.sunoapi.org/api/v1` | API base URL |
+| `PORT` | No | `3000` | Local server port |
+
 ## Controls
 
 | Element | Action |
 |---------|--------|
 | Prompt textarea | Describe the music you want |
 | Song count | Set how many songs to generate (1-20) |
+| Model selector | Choose Suno model version |
 | Format selector | Choose WAV or MP3 download format |
 | Generate button | Start the generation process |
 | Reset button | Clear prompt, playlist, and all counters |

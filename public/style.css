@@ -366,6 +366,13 @@ ul { list-style: none; }
   color: var(--accent-green);
 }
 
+.playlist-item-wav-pending {
+  background: rgba(34, 211, 238, .15);
+  border: 1px solid rgba(34, 211, 238, .3);
+  color: var(--accent-cyan);
+  animation: pulse-status 1.5s ease-in-out infinite;
+}
+
 /* ---------- Controls Panel ---------- */
 .controls-body {
   flex: 1;

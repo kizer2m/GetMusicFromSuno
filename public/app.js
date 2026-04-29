@@ -291,6 +291,7 @@
                     imageUrl: extra.imageUrl || extra.sourceImageUrl,
                     lyrics: extra.prompt || extra.lyric,
                     saved: false,
+                    format: state.tracks[trackIdx].format, // inherit format from parent
                   };
                   // Only add if not already present
                   if (!state.tracks.find(t => t.id === extraTrack.id)) {
@@ -488,11 +489,18 @@
       ? `<span class="playlist-item-saved" title="Saved to done/">💾</span>`
       : '';
 
-    const wavBadge = track.wavReady
-      ? `<span class="playlist-item-wav" title="WAV format">WAV</span>`
-      : (track.format === 'mp3' && track.status === 'success'
-        ? `<span class="playlist-item-wav playlist-item-mp3" title="MP3 format">MP3</span>`
-        : '');
+    // Format badge: show actual format based on track state
+    let formatBadgeHTML = '';
+    if (track.status === 'success') {
+      if (track.wavReady) {
+        formatBadgeHTML = `<span class="playlist-item-wav" title="WAV format">WAV</span>`;
+      } else if (track.format === 'wav' && !track.wavReady) {
+        // WAV requested but conversion still in progress or pending
+        formatBadgeHTML = `<span class="playlist-item-wav playlist-item-wav-pending" title="WAV conversion in progress...">WAV ⏳</span>`;
+      } else {
+        formatBadgeHTML = `<span class="playlist-item-wav playlist-item-mp3" title="MP3 format">MP3</span>`;
+      }
+    }
 
     return `
       <span class="playlist-item-index">${index + 1}</span>
@@ -501,7 +509,7 @@
         <div class="playlist-item-title">${escapeHTML(track.title)}</div>
         <div class="playlist-item-meta">${escapeHTML(truncate(track.prompt, 40))}</div>
       </div>
-      ${wavBadge}
+      ${formatBadgeHTML}
       ${savedBadge}
       <span class="playlist-item-status ${statusClass}">${statusLabel}</span>
     `;
@@ -540,8 +548,14 @@
       DOM.playerArt.innerHTML = `<img src="${track.imageUrl}" alt="${track.title}">`;
     }
 
-    // Update format badge
-    DOM.formatBadge.textContent = track.wavReady ? 'WAV' : 'MP3';
+    // Update format badge based on actual track format
+    if (track.wavReady) {
+      DOM.formatBadge.textContent = 'WAV';
+    } else if (track.format === 'wav') {
+      DOM.formatBadge.textContent = 'WAV';
+    } else {
+      DOM.formatBadge.textContent = 'MP3';
+    }
   }
 
   function togglePlay() {

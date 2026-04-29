@@ -1,12 +1,15 @@
 @echo off
-title Get Music - AI Music Generator
+title Get Music From Suno - AI Music Generator
 
 echo.
 echo  ==========================================
-echo        Get Music - AI Music Generator
-echo              Version 1.1.0
+echo    Get Music From Suno - AI Music Generator
+echo              Version 1.2.1
 echo  ==========================================
 echo.
+
+:: Change to script directory
+cd /d "%~dp0"
 
 :: Check if Node.js is installed
 where node >nul 2>&1
@@ -17,8 +20,66 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-:: Change to script directory
-cd /d "%~dp0"
+:: Create done folder if missing
+if not exist "done" (
+    mkdir "done"
+    echo [OK] Created done/ folder for saved tracks.
+)
+
+:: Check .env file exists
+if not exist ".env" (
+    echo [ERROR] .env file not found!
+    echo.
+    echo         Please create a .env file with the following content:
+    echo.
+    echo         SUNO_API_KEY=your_api_key_here
+    echo         SUNO_API_BASE=https://api.sunoapi.org/api/v1
+    echo         PORT=3000
+    echo.
+    echo         Creating a template .env file for you...
+    (
+        echo SUNO_API_KEY=your_api_key_here
+        echo SUNO_API_BASE=https://api.sunoapi.org/api/v1
+        echo PORT=3000
+    ) > .env
+    echo [OK] Template .env file created. Please edit it with your API key.
+    echo.
+    pause
+    exit /b 1
+)
+
+:: Check if SUNO_API_KEY is set in .env
+findstr /C:"SUNO_API_KEY=" ".env" >nul 2>&1
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] SUNO_API_KEY not found in .env file.
+    echo         Add: SUNO_API_KEY=your_api_key_here
+    pause
+    exit /b 1
+)
+
+:: Check if API key is still the placeholder
+findstr /C:"SUNO_API_KEY=your_api_key_here" ".env" >nul 2>&1
+if %ERRORLEVEL% equ 0 (
+    echo [ERROR] SUNO_API_KEY is still set to the placeholder value.
+    echo         Please edit .env and add your real API key.
+    pause
+    exit /b 1
+)
+
+:: Check if SUNO_API_BASE is set
+findstr /C:"SUNO_API_BASE=" ".env" >nul 2>&1
+if %ERRORLEVEL% neq 0 (
+    echo [WARN] SUNO_API_BASE not found in .env, will use default.
+)
+
+:: Check if PORT is set
+findstr /C:"PORT=" ".env" >nul 2>&1
+if %ERRORLEVEL% neq 0 (
+    echo [WARN] PORT not found in .env, will use default 3000.
+)
+
+echo [OK] Configuration verified.
+echo.
 
 :: Check if node_modules exists
 if not exist "node_modules" (
@@ -31,12 +92,6 @@ if not exist "node_modules" (
     )
     echo [OK] Dependencies installed.
     echo.
-)
-
-:: Create done folder if missing
-if not exist "done" (
-    mkdir "done"
-    echo [OK] Created done/ folder for saved tracks.
 )
 
 :: Kill any process on port 3000
