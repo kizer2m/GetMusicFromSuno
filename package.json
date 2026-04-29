@@ -1,13 +1,20 @@
 {
   "name": "get-music",
   "version": "1.5.0",
-  "description": "Suno AI Music Generator with premium GUI",
+  "description": "AI Music Generator — Generate songs from text prompts using Suno API. Self-hosted web app with WAV/MP3 download, audio player, dark/light theme. Node.js + Vanilla JS.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
   },
-  "keywords": ["suno", "ai", "music", "generator"],
+  "keywords": [
+    "suno", "suno-api", "suno-ai",
+    "ai-music", "ai-music-generator", "ai-song-generator",
+    "music-generator", "text-to-music", "music-creation",
+    "wav-converter", "mp3-download", "audio-player",
+    "web-audio", "self-hosted", "nodejs", "express",
+    "vanilla-javascript", "open-source"
+  ],
   "author": "Edward",
   "license": "MIT",
   "dependencies": {

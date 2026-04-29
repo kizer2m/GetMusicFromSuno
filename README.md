@@ -1,74 +1,113 @@
-# Get Music From Suno
+# 🎵 Get Music From Suno — AI Music Generator
 
-> AI-powered music generator with a premium interface, built on the Suno API.
+[![Version](https://img.shields.io/badge/version-1.5.0-purple.svg)](https://github.com/kizer2m/GetMusicFromSuno)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-brightgreen.svg)](https://nodejs.org/)
+[![Suno API](https://img.shields.io/badge/Suno_API-v5.5-blue.svg)](https://sunoapi.org)
 
-## Version
+> **Generate AI music from text prompts using the Suno API.** A self-hosted web application with a premium dark/light UI, built-in playlist, WAV/MP3 download, and audio player. No frameworks — pure vanilla JavaScript.
 
-**1.5.0**
+---
 
-## Features
+## ✨ What Is This?
 
-- **Text Prompt Generation** — Describe the music you want, and AI creates it
-- **Batch Generation** — Generate multiple songs from one prompt
-- **Real-time Progress** — Live progress bar and status updates
-- **Built-in Playlist** — All generated tracks appear in a sleek playlist
-- **Format Selector** — Choose WAV (lossless) or MP3 (compressed) download format
-- **WAV Conversion** — Automatic WAV conversion via Suno API pipeline
-- **Dynamic Format Badge** — Shows WAV or MP3 in player and playlist per track
-- **Mini Player** — Play, pause, skip, rewind/forward 10s, and seek through tracks
-- **Interactive Seek Bar** — Full-width seek bar with mouse drag support
-- **Volume Control** — Toggle mute/unmute with one click
-- **Auto-Save** — Tracks automatically download to `done/` folder as `TrackName_V1.wav`, `TrackName_V2.wav`
-- **Versioned Filenames** — Multi-version tracks saved with V1, V2, V3... suffixes
-- **API Balance** — Monitor your remaining credits in the header
-- **Styled Console** — Beautiful server logs with colors, icons, and progress indicators
-- **Dark/Light Theme** — Toggle between dark and light themes (persisted in browser)
+**Get Music From Suno** is an open-source, self-hosted web interface for the [Suno AI](https://suno.com) music generation API. Describe the music you want in plain text — the AI creates full songs with vocals, instrumentals, and lyrics in seconds.
 
-## Prerequisites
+**Use cases:**
+- 🎶 Generate royalty-free background music for videos
+- 🎙️ Create AI-generated songs for podcasts, YouTube, TikTok
+- 🎧 Prototype music ideas with text descriptions
+- 🎹 Batch-generate multiple song variations from one prompt
+
+---
+
+## 🚀 Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Text-to-Music** | Describe any genre, mood, or style — AI creates full songs |
+| **Suno V5.5 / V4.5 / V4 / V3.5** | Choose from multiple Suno AI model versions |
+| **WAV + MP3 Download** | Lossless WAV or compressed MP3 — automatic conversion |
+| **Built-in Audio Player** | Play, pause, skip, seek, rewind/forward 10s, volume control |
+| **Batch Generation** | Generate 1–20 songs per prompt |
+| **Auto-Save to Disk** | Tracks saved as `TrackName_V1.wav`, `TrackName_V2.wav` |
+| **Dark / Light Theme** | Toggle with sun/moon icon, persists in browser |
+| **Real-time Progress** | Live progress bar with status updates |
+| **API Credit Balance** | Monitor remaining Suno API credits |
+| **Cross-platform** | Windows (`start.bat`) + macOS/Linux (`start.sh`) |
+| **No Build Step** | Pure vanilla HTML/CSS/JS — just `npm start` |
+
+---
+
+## 📸 Screenshots
+
+| Dark Theme | Light Theme |
+|:---:|:---:|
+| *Coming soon* | *Coming soon* |
+
+---
+
+## 🛠️ Tech Stack
+
+- **Backend:** Node.js + Express.js
+- **Frontend:** Vanilla HTML / CSS / JavaScript (no frameworks)
+- **API:** [Suno AI](https://suno.com) via [sunoapi.org](https://sunoapi.org)
+- **Font:** Inter (Google Fonts)
+- **Design:** CSS Custom Properties, dark/light theme, responsive layout
+
+---
+
+## 📦 Prerequisites
 
 - **[Node.js](https://nodejs.org/)** v18 or higher (includes npm)
+- **API Key** from [sunoapi.org](https://sunoapi.org)
 
-## Quick Start
+---
 
-1. Clone the repository
-2. Create a `.env` file with your API key:
-   ```
-   SUNO_API_KEY=your_api_key_here
-   SUNO_API_BASE=https://api.sunoapi.org/api/v1
-   PORT=3000
-   ```
-3. Install dependencies and run:
-   ```bash
-   npm install
-   npm run dev
-   ```
-4. Open [http://localhost:3000](http://localhost:3000)
+## ⚡ Quick Start
 
-## Start Scripts
-
-The project includes ready-to-use start scripts that automatically:
-- ✅ Check Node.js and npm are installed
-- ✅ Verify all npm dependencies are present
-- ✅ Create the `done/` folder for saved tracks
-- ✅ Check for `.env` file and create a template if missing
-- ✅ Validate that `SUNO_API_KEY` is set (not a placeholder)
-- ✅ Install missing packages automatically
-- ✅ Kill existing processes on port 3000
-- ✅ Start the server and open the browser
-
-### Windows
-```cmd
-start.bat
-```
-Double-click `start.bat` or run from Command Prompt.
-
-### macOS / Linux
 ```bash
-chmod +x start.sh
-./start.sh
+# 1. Clone the repository
+git clone https://github.com/kizer2m/GetMusicFromSuno.git
+cd GetMusicFromSuno
+
+# 2. Create .env file
+cp .env.example .env
+# Edit .env and add your SUNO_API_KEY
+
+# 3. Install and run
+npm install
+npm run dev
+
+# 4. Open in browser
+# → http://localhost:3000
 ```
 
-## .env Configuration
+Or use the one-click start scripts:
+
+| Platform | Command |
+|----------|---------|
+| **Windows** | Double-click `start.bat` |
+| **macOS / Linux** | `chmod +x start.sh && ./start.sh` |
+
+The start scripts automatically:
+- ✅ Verify Node.js and npm installation
+- ✅ Install missing dependencies
+- ✅ Validate `.env` configuration
+- ✅ Kill existing processes on port 3000
+- ✅ Start server and open browser
+
+---
+
+## ⚙️ Configuration
+
+Create a `.env` file in the project root:
+
+```env
+SUNO_API_KEY=your_api_key_here
+SUNO_API_BASE=https://api.sunoapi.org/api/v1
+PORT=3000
+```
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
@@ -76,60 +115,103 @@ chmod +x start.sh
 | `SUNO_API_BASE` | No | `https://api.sunoapi.org/api/v1` | API base URL |
 | `PORT` | No | `3000` | Local server port |
 
-## Controls
+---
+
+## 🎮 Controls
 
 | Element | Action |
 |---------|--------|
 | Prompt textarea | Describe the music you want |
-| Song count | Set how many songs to generate (1-20) |
-| Model selector | Choose Suno model version |
-| Format selector | Choose WAV or MP3 download format |
-| Generate button | Start the generation process |
-| Reset button | Clear prompt, playlist, and all counters |
+| Song count (+/-) | Set how many songs to generate (1–20) |
+| Model selector | Choose Suno model (V5.5, V4.5, V4, V3.5) |
+| Format selector | Choose WAV (lossless) or MP3 |
+| ⚡ Generate | Start AI music generation |
+| 🔄 Reset | Clear prompt, playlist, and counters |
 | Double-click track | Play selected track |
-| Play/Pause | Toggle playback |
-| Prev/Next | Switch between tracks |
-| Rewind/Forward | Skip ±10 seconds |
+| ⏮ ⏪ ▶️ ⏩ ⏭ | Prev, -10s, Play/Pause, +10s, Next |
 | Seek bar | Click or drag to jump to any position |
-| Volume icon | Mute/unmute audio |
+| 🔊 Volume | Mute/unmute toggle |
+| ☀️ / 🌙 Theme | Switch between dark and light mode |
 
-## Changelog
+---
+
+## 🔄 WAV Conversion Pipeline
+
+```
+Text Prompt → Suno API → MP3 (default)
+                           ↓ (if WAV selected)
+                     Wait for SUCCESS
+                           ↓
+                     POST /wav/generate (15s delay)
+                           ↓
+                     Poll /wav/record-info
+                           ↓
+                     WAV URL → Download & Save
+```
+
+- Automatic retry (3 attempts with exponential backoff)
+- Fallback to MP3 if WAV conversion fails
+
+---
+
+## 📁 Project Structure
+
+```
+GetMusicFromSuno/
+├── server.js          # Express backend, API proxy, styled console
+├── public/
+│   ├── index.html     # Single-page application
+│   ├── style.css      # Design system (dark + light themes)
+│   └── app.js         # Frontend logic (generation, player, playlist)
+├── done/              # Auto-saved tracks (TrackName_V1.wav, etc.)
+├── start.bat          # Windows start script
+├── start.sh           # macOS/Linux start script
+├── .env               # API key configuration (not committed)
+├── package.json       # Dependencies and scripts
+└── README.md          # This file
+```
+
+---
+
+## 📋 Changelog
 
 ### v1.5.0
-- Dark/Light theme toggle with sun/moon icon button
+- 🌓 Dark/Light theme toggle with sun/moon icon
 - Theme persists across sessions (localStorage)
 - Dynamic version display from package.json
 - Fixed version mismatch in UI
 - Smooth CSS transitions on theme switch
 
 ### v1.4.0
-- Versioned filenames: tracks saved as `TrackName_V1.wav`, `TrackName_V2.wav`
-- Fixed WAV pipeline: correct polling (wait for full SUCCESS before WAV conversion)
-- Fixed infinite polling bug (variable scoping in FIRST_SUCCESS handler)
-- Added retry logic for WAV conversion (3 attempts with exponential backoff)
-- Start scripts kill existing port 3000 process before starting
-- Removed accidental `]` file artifact
+- Versioned filenames: `TrackName_V1.wav`, `TrackName_V2.wav`
+- Fixed WAV pipeline: correct polling (wait for full SUCCESS)
+- Fixed infinite polling bug (variable scoping)
+- Added retry logic for WAV conversion (3 attempts)
+- Start scripts kill existing port 3000 process
 
 ### v1.3.0
 - Fixed WAV conversion pipeline (correct API field mapping)
 - Styled server console with ANSI colors and icons
 - Start scripts now verify all dependencies
-- Added CLAUDE.md/GEMINI.md to .gitignore
-
-### v1.2.1
-- Fixed format badge logic in playlist and player
-- Cross-platform start scripts
 
 ### v1.2.0
 - WAV/MP3 format selector
-- Dynamic format badges
+- Dynamic format badges in player and playlist
 
-## Tech Stack
+---
 
-- Node.js + Express.js (backend)
-- Vanilla HTML/CSS/JS (frontend)
-- Suno API via sunoapi.org
+## 🤝 Contributing
 
-## License
+Contributions are welcome! Feel free to open issues or submit pull requests.
 
-MIT
+---
+
+## 📄 License
+
+MIT — free for personal and commercial use.
+
+---
+
+## 🔑 Keywords
+
+`suno` `suno-api` `ai-music` `ai-music-generator` `music-generator` `text-to-music` `suno-ai` `music-creation` `ai-song-generator` `wav-converter` `mp3-download` `audio-player` `web-audio` `nodejs` `express` `vanilla-javascript` `self-hosted` `open-source` `dark-theme` `light-theme`
