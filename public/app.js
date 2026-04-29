@@ -281,10 +281,12 @@
                     autoSaveTrack(trackIdx);
                   }
                 } else {
-                  // FIRST_SUCCESS: save MP3 for now, WAV will retry on full SUCCESS
+                  // FIRST_SUCCESS: save MP3 immediately if format is MP3
                   if (state.tracks[trackIdx].format !== 'wav') {
                     autoSaveTrack(trackIdx);
                   }
+                  // Keep polling — we need full SUCCESS for WAV conversion
+                  stillActive.push(taskId);
                 }
 
                 // Add additional tracks from the same task (Suno generates 2 per task)
@@ -324,6 +326,11 @@
               state.completed++;
               updateTrackInPlaylist(trackIdx);
               updateProgressUI();
+              // If FIRST_SUCCESS was handled but we pushed to stillActive above,
+              // don't double-count on the next SUCCESS poll
+              if (status === 'FIRST_SUCCESS') {
+                state.completed--; // will be re-counted on full SUCCESS
+              }
             } else if (status === 'TEXT_SUCCESS') {
               // Lyrics generated, audio still processing
               const sunoData = response?.sunoData;
@@ -695,6 +702,7 @@
               console.log(`[WAV] ✅ Ready: "${state.tracks[trackIdx].title}" → ${wavUrl.slice(0, 80)}`);
               state.tracks[trackIdx].audioUrl = wavUrl;
               state.tracks[trackIdx].wavReady = true;
+              state.tracks[trackIdx].saved = false; // Reset so autoSaveTrack actually saves the WAV
               updateTrackInPlaylist(trackIdx);
               if (state.currentIndex === trackIdx) {
                 DOM.formatBadge.textContent = 'WAV';

@@ -22,6 +22,10 @@
 - **API Balance** — Monitor your remaining credits in the header
 - **Styled Console** — Beautiful server logs with colors, icons, and progress indicators
 
+## Prerequisites
+
+- **[Node.js](https://nodejs.org/)** v18 or higher (includes npm)
+
 ## Quick Start
 
 1. Clone the repository
