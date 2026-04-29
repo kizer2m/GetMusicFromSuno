@@ -38,6 +38,10 @@
     btnGenerate: $('#btn-generate'),
     btnReset: $('#btn-reset'),
     modelSelect: $('#model-select'),
+    modelDropdown: $('#model-dropdown'),
+    modelDropdownTrigger: $('#model-dropdown-trigger'),
+    modelDropdownValue: $('#model-dropdown-value'),
+    modelDropdownMenu: $('#model-dropdown-menu'),
     formatSelect: $('#format-select'),
     // Progress
     progressCounter: $('#progress-counter'),
@@ -124,6 +128,77 @@
 
     // Theme toggle
     DOM.btnTheme.addEventListener('click', toggleTheme);
+
+    // Custom model dropdown
+    DOM.modelDropdownTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      DOM.modelDropdown.classList.toggle('open');
+    });
+
+    DOM.modelDropdownMenu.querySelectorAll('.model-dropdown-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const value = item.dataset.value;
+        const label = item.querySelector('.model-item-label').textContent;
+        DOM.modelSelect.value = value;
+        DOM.modelDropdownValue.textContent = label;
+        // Update selected state
+        DOM.modelDropdownMenu.querySelectorAll('.model-dropdown-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        DOM.modelDropdown.classList.remove('open');
+      });
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+      if (!DOM.modelDropdown.contains(e.target)) {
+        DOM.modelDropdown.classList.remove('open');
+      }
+    });
+
+    // Tooltip on hover — shared element appended to body (avoids backdrop-filter clipping)
+    const tooltipEl = document.createElement('div');
+    tooltipEl.className = 'model-tooltip-popup';
+    document.body.appendChild(tooltipEl);
+
+    DOM.modelDropdownMenu.querySelectorAll('.model-dropdown-item').forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        const desc = item.dataset.tooltip;
+        if (!desc) return;
+
+        tooltipEl.textContent = desc;
+        tooltipEl.classList.add('visible');
+
+        const menuRect = DOM.modelDropdownMenu.getBoundingClientRect();
+        const itemRect = item.getBoundingClientRect();
+        const tooltipW = tooltipEl.offsetWidth;
+        const tooltipH = tooltipEl.offsetHeight;
+
+        // Position to the right of the dropdown menu
+        let left = menuRect.right + 12;
+        let arrowSide = 'left'; // arrow points left (tooltip is on the right)
+
+        // If it goes off-screen right, flip to left side
+        if (left + tooltipW > window.innerWidth - 10) {
+          left = menuRect.left - tooltipW - 12;
+          arrowSide = 'right'; // arrow points right (tooltip is on the left)
+        }
+
+        let top = itemRect.top + (itemRect.height / 2) - (tooltipH / 2);
+        if (top < 10) top = 10;
+        if (top + tooltipH > window.innerHeight - 10) {
+          top = window.innerHeight - tooltipH - 10;
+        }
+
+        tooltipEl.style.left = left + 'px';
+        tooltipEl.style.top = top + 'px';
+        tooltipEl.className = 'model-tooltip-popup visible arrow-' + arrowSide;
+      });
+
+      item.addEventListener('mouseleave', () => {
+        tooltipEl.classList.remove('visible');
+      });
+    });
 
     // Player
     DOM.btnPlay.addEventListener('click', togglePlay);
@@ -466,6 +541,10 @@
     DOM.promptInput.value = '';
     DOM.songCount.value = '1';
     DOM.modelSelect.value = 'V5_5';
+    DOM.modelDropdownValue.textContent = 'Suno V5.5 — Voice-Customized';
+    DOM.modelDropdownMenu.querySelectorAll('.model-dropdown-item').forEach(i => i.classList.remove('selected'));
+    DOM.modelDropdownMenu.querySelector('[data-value="V5_5"]').classList.add('selected');
+    DOM.modelDropdown.classList.remove('open');
     DOM.formatSelect.value = 'wav';
     DOM.playlistList.innerHTML = '';
     DOM.playlistEmpty.classList.remove('hidden');

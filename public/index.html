@@ -123,19 +123,35 @@
         <!-- Model & Format selectors (side by side) -->
         <div class="selectors-row">
           <div class="selector-group">
-            <label class="field-label" for="model-select">Model</label>
-            <div class="model-select-wrapper">
-              <select id="model-select" class="model-select">
-                <option value="V5_5" selected>Suno V5.5 — Latest</option>
-                <option value="V5">Suno V5</option>
-                <option value="V4_5PLUS">Suno V4.5 Plus</option>
-                <option value="V4_5ALL">Suno V4.5 All</option>
-                <option value="V4_5">Suno V4.5</option>
-                <option value="V4">Suno V4</option>
-              </select>
-              <svg class="model-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
+            <label class="field-label">Model</label>
+            <div class="model-dropdown-wrapper" id="model-dropdown">
+              <button type="button" class="model-dropdown-trigger" id="model-dropdown-trigger">
+                <span class="model-dropdown-value" id="model-dropdown-value">Suno V5.5 — Voice-Customized</span>
+                <svg class="model-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <input type="hidden" id="model-select" value="V5_5">
+              <ul class="model-dropdown-menu" id="model-dropdown-menu">
+                <li class="model-dropdown-item selected" data-value="V5_5" data-tooltip="Unleash Your Voice: Custom Models Tailored to Your Unique Taste.">
+                  <span class="model-item-label">Suno V5.5 — Voice-Customized</span>
+                </li>
+                <li class="model-dropdown-item" data-value="V5" data-tooltip="Cutting-edge model with enhanced quality and capabilities. Our newest offering for advanced music generation.">
+                  <span class="model-item-label">Suno V5 — Latest Model</span>
+                </li>
+                <li class="model-dropdown-item" data-value="V4_5PLUS" data-tooltip="Most advanced model with enhanced tonal variation and new creative approaches, up to 8 minutes. Best choice for highest quality and longest tracks.">
+                  <span class="model-item-label">Suno V4.5 Plus — Richer Tones</span>
+                </li>
+                <li class="model-dropdown-item" data-value="V4_5ALL" data-tooltip="V4.5-all is better song structure, max 8 min. Perfect for well-structured musical pieces.">
+                  <span class="model-item-label">Suno V4.5 All — Better Structure</span>
+                </li>
+                <li class="model-dropdown-item" data-value="V4_5" data-tooltip="Excellent prompt understanding with faster generation speeds, up to 8 minutes. Our advanced model for complex music requests.">
+                  <span class="model-item-label">Suno V4.5 — Smart Prompts</span>
+                </li>
+                <li class="model-dropdown-item" data-value="V4" data-tooltip="Enhanced vocal quality and refined audio processing, up to 4 minutes. Ideal choice when vocal clarity is paramount.">
+                  <span class="model-item-label">Suno V4 — Improved Vocals</span>
+                </li>
+              </ul>
             </div>
           </div>
           <div class="selector-group">

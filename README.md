@@ -1,6 +1,6 @@
 # 🎵 Get Music From Suno — AI Music Generator
 
-[![Version](https://img.shields.io/badge/version-1.6.0-purple.svg)](https://github.com/kizer2m/GetMusicFromSuno)
+[![Version](https://img.shields.io/badge/version-1.6.1-purple.svg)](https://github.com/kizer2m/GetMusicFromSuno)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-brightgreen.svg)](https://nodejs.org/)
 [![Suno API](https://img.shields.io/badge/Suno_API-v5.5-blue.svg)](https://sunoapi.org)
@@ -27,6 +27,7 @@
 |---------|-------------|
 | **Text-to-Music** | Describe any genre, mood, or style — AI creates full songs |
 | **Suno V5.5 / V5 / V4.5+ / V4.5 All / V4.5 / V4** | Choose from 6 Suno AI model versions |
+| **Model Tooltips** | Hover any model for a description of its capabilities |
 | **WAV + MP3 Download** | Lossless WAV or compressed MP3 — automatic conversion |
 | **Built-in Audio Player** | Play, pause, skip, seek, rewind/forward 10s, volume control |
 | **Batch Generation** | Generate 1–20 songs per prompt |
@@ -127,7 +128,7 @@ Replace `your_api_key_here` with your actual API key from [sunoapi.org](https://
 |---------|--------|
 | Prompt textarea | Describe the music you want |
 | Song count (+/-) | Set how many songs to generate (1–20) |
-| Model selector | Choose Suno model (V5.5, V5, V4.5+, V4.5 All, V4.5, V4) |
+| Model selector | Choose Suno model (V5.5, V5, V4.5+, V4.5 All, V4.5, V4) — hover for details |
 | Format selector | Choose WAV (lossless) or MP3 |
 | ⚡ Generate | Start AI music generation |
 | 🔄 Reset | Clear prompt, playlist, and counters |
@@ -178,6 +179,11 @@ GetMusicFromSuno/
 ---
 
 ## 📋 Changelog
+
+### v1.6.1
+- Custom model dropdown with hover tooltips showing model descriptions
+- Smart tooltip positioning (auto-flips near viewport edge)
+- Updated screenshots with new UI
 
 ### v1.6.0
 - Model selector updated to match sunoapi.org API: V5.5, V5, V4.5 Plus, V4.5 All, V4.5, V4
