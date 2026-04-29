@@ -489,16 +489,16 @@
       ? `<span class="playlist-item-saved" title="Saved to done/">💾</span>`
       : '';
 
-    // Format badge: show actual format based on track state
+    // Format badge: show format based on track state
     let formatBadgeHTML = '';
     if (track.status === 'success') {
       if (track.wavReady) {
         formatBadgeHTML = `<span class="playlist-item-wav" title="WAV format">WAV</span>`;
-      } else if (track.format === 'wav' && !track.wavReady) {
-        // WAV requested but conversion still in progress or pending
-        formatBadgeHTML = `<span class="playlist-item-wav playlist-item-wav-pending" title="WAV conversion in progress...">WAV ⏳</span>`;
-      } else {
+      } else if (track.format === 'mp3') {
         formatBadgeHTML = `<span class="playlist-item-wav playlist-item-mp3" title="MP3 format">MP3</span>`;
+      } else {
+        // WAV selected, conversion in progress — show WAV (will update when done)
+        formatBadgeHTML = `<span class="playlist-item-wav" title="WAV format">WAV</span>`;
       }
     }
 
@@ -549,13 +549,8 @@
     }
 
     // Update format badge based on actual track format
-    if (track.wavReady) {
-      DOM.formatBadge.textContent = 'WAV';
-    } else if (track.format === 'wav') {
-      DOM.formatBadge.textContent = 'WAV';
-    } else {
-      DOM.formatBadge.textContent = 'MP3';
-    }
+    const actualFormat = track.wavReady ? 'WAV' : (track.format === 'wav' ? 'WAV' : 'MP3');
+    DOM.formatBadge.textContent = actualFormat;
   }
 
   function togglePlay() {
@@ -633,24 +628,26 @@
 
     try {
       const audioId = track.id;
+      console.log(`[WAV] Starting conversion for "${track.title}" (audioId: ${audioId}, taskId: ${taskId})`);
       const res = await fetch('/api/wav/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ taskId, audioId }),
       });
       const json = await res.json();
+      console.log(`[WAV] Generate response:`, json);
 
       if (json.success && json.wavTaskId) {
         console.log(`[WAV] Conversion started for "${track.title}", wavTaskId: ${json.wavTaskId}`);
         pollWavStatus(trackIdx, json.wavTaskId);
       } else {
         console.warn(`[WAV] Could not start conversion for "${track.title}": ${json.error}`);
-        // Fallback: save the MP3 version
-        autoSaveTrack(trackIdx);
+        // Fallback: mark as MP3 and save
+        markAsMp3Fallback(trackIdx);
       }
     } catch (err) {
       console.error(`[WAV] Request failed for "${track.title}":`, err);
-      autoSaveTrack(trackIdx);
+      markAsMp3Fallback(trackIdx);
     }
   }
 
@@ -662,36 +659,64 @@
       try {
         const res = await fetch(`/api/wav/status/${wavTaskId}`);
         const json = await res.json();
+        console.log(`[WAV] Poll #${i + 1} for track ${trackIdx}:`, json.data?.status || json);
 
         if (json.success && json.data) {
           const status = json.data.status;
 
           if (status === 'SUCCESS') {
-            // Extract WAV download URL
-            const wavUrl = json.data.response?.wavAudioUrl || json.data.response?.audioUrl || json.data.response?.url;
+            // Extract WAV download URL — try all possible response fields
+            const resp = json.data.response || {};
+            const wavUrl = resp.wavAudioUrl || resp.audioUrl || resp.url || resp.downloadUrl;
             if (wavUrl && state.tracks[trackIdx]) {
-              console.log(`[WAV] ✅ Ready: "${state.tracks[trackIdx].title}"`);
+              console.log(`[WAV] ✅ Ready: "${state.tracks[trackIdx].title}" → ${wavUrl.slice(0, 80)}`);
               state.tracks[trackIdx].audioUrl = wavUrl;
               state.tracks[trackIdx].wavReady = true;
               updateTrackInPlaylist(trackIdx);
+              // Update player badge if this track is currently playing
+              if (state.currentIndex === trackIdx) {
+                DOM.formatBadge.textContent = 'WAV';
+              }
               autoSaveTrack(trackIdx);
+            } else {
+              console.warn(`[WAV] SUCCESS but no URL found in response:`, resp);
+              markAsMp3Fallback(trackIdx);
             }
             return;
           } else if (status === 'FAILED' || status === 'CREATE_TASK_FAILED') {
-            console.warn(`[WAV] Conversion failed for track ${trackIdx}`);
-            autoSaveTrack(trackIdx);
+            console.warn(`[WAV] Conversion failed for track ${trackIdx}, status: ${status}`);
+            markAsMp3Fallback(trackIdx);
             return;
           }
           // else still processing, continue polling
         }
-      } catch {
+      } catch (err) {
+        console.warn(`[WAV] Poll error for track ${trackIdx}:`, err.message);
         // network error, keep trying
       }
     }
 
     // Timeout — save MP3 fallback
-    console.warn(`[WAV] Timeout for track ${trackIdx}, saving MP3 fallback`);
+    console.warn(`[WAV] Timeout for track ${trackIdx}, falling back to MP3`);
+    markAsMp3Fallback(trackIdx);
+  }
+
+  /**
+   * When WAV conversion fails, update the track to reflect MP3 format
+   * and save the MP3 version.
+   */
+  function markAsMp3Fallback(trackIdx) {
+    const track = state.tracks[trackIdx];
+    if (!track) return;
+    track.format = 'mp3';
+    track.wavReady = false;
+    updateTrackInPlaylist(trackIdx);
+    // Update player badge if this track is currently playing
+    if (state.currentIndex === trackIdx) {
+      DOM.formatBadge.textContent = 'MP3';
+    }
     autoSaveTrack(trackIdx);
+    console.log(`[WAV] Fallback to MP3 for "${track.title}"`);
   }
 
   // ========== PROGRESS ==========

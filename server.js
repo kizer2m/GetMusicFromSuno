@@ -117,13 +117,18 @@ app.post('/api/wav/generate', async (req, res) => {
     if (taskId) payload.taskId = taskId;
     if (audioId) payload.audioId = audioId;
 
+    console.log(`[WAV Generate] Requesting conversion: taskId=${taskId}, audioId=${audioId}`);
     const result = await apiFetch('/wav/generate', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
 
+    console.log(`[WAV Generate] Full response:`, JSON.stringify(result).slice(0, 500));
+
     if (result.code === 200) {
-      return res.json({ success: true, wavTaskId: result.data?.taskId || result.data });
+      const wavTaskId = result.data?.taskId || result.data;
+      console.log(`[WAV Generate] Success, wavTaskId: ${wavTaskId}`);
+      return res.json({ success: true, wavTaskId });
     }
     return res.status(400).json({ success: false, error: result.msg || 'WAV generation failed' });
   } catch (err) {
@@ -138,6 +143,8 @@ app.get('/api/wav/status/:taskId', async (req, res) => {
     const result = await apiFetch(`/wav/record-info?taskId=${req.params.taskId}`, {
       method: 'GET',
     });
+
+    console.log(`[WAV Status] taskId=${req.params.taskId} | Status: ${result.data?.status} | Response keys: ${JSON.stringify(Object.keys(result.data?.response || {}))}`);
 
     if (result.code === 200) {
       return res.json({ success: true, data: result.data });
