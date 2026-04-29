@@ -1,156 +1,110 @@
-#!/usr/bin/env bash
-# Get Music From Suno — Start Script (Linux / macOS)
-# Version: 1.2.1
+#!/bin/bash
 
-set -e
+# ========================================
+# Get Music From Suno v1.3.0
+# ========================================
 
 echo ""
-echo "  =========================================="
-echo "   Get Music From Suno - AI Music Generator"
-echo "             Version 1.2.1"
-echo "  =========================================="
+echo "╔═══════════════════════════════════════╗"
+echo "║   🎵 Get Music From Suno v1.3.0      ║"
+echo "╚═══════════════════════════════════════╝"
 echo ""
 
-# Change to script directory
-cd "$(dirname "$0")"
-
-# Check if Node.js is installed
+# ========== Check Node.js ==========
 if ! command -v node &> /dev/null; then
-    echo "[ERROR] Node.js is not installed or not in PATH."
-    echo "        Install from: https://nodejs.org/"
-    echo "        Or use: brew install node (macOS) / sudo apt install nodejs (Ubuntu)"
+    echo "❌ Node.js is not installed!"
+    echo "   Install from: https://nodejs.org/"
+    echo ""
     exit 1
 fi
+NODE_VER=$(node --version)
+echo "✅ Node.js: $NODE_VER"
 
-echo "[OK] Node.js $(node -v) found."
+# ========== Check npm ==========
+if ! command -v npm &> /dev/null; then
+    echo "❌ npm is not installed!"
+    echo "   Reinstall Node.js from: https://nodejs.org/"
+    echo ""
+    exit 1
+fi
+NPM_VER=$(npm --version)
+echo "✅ npm: v$NPM_VER"
 
-# Create done folder if missing
+# ========== Create done/ folder ==========
 if [ ! -d "done" ]; then
-    mkdir -p "done"
-    echo "[OK] Created done/ folder for saved tracks."
+    mkdir -p done
+    echo "📁 Created done/ folder"
+else
+    echo "📁 done/ folder exists"
 fi
 
-# Check .env file exists
+# ========== Check .env file ==========
 if [ ! -f ".env" ]; then
-    echo "[ERROR] .env file not found!"
     echo ""
-    echo "        Please create a .env file with the following content:"
+    echo "⚠️  .env file not found! Creating template..."
     echo ""
-    echo "        SUNO_API_KEY=your_api_key_here"
-    echo "        SUNO_API_BASE=https://api.sunoapi.org/api/v1"
-    echo "        PORT=3000"
-    echo ""
-    echo "        Creating a template .env file for you..."
     cat > .env << 'EOF'
 SUNO_API_KEY=your_api_key_here
 SUNO_API_BASE=https://api.sunoapi.org/api/v1
 PORT=3000
 EOF
-    echo "[OK] Template .env file created. Please edit it with your API key."
+    echo "📝 Template .env created."
+    echo "❗ Edit .env and set your SUNO_API_KEY before running!"
+    echo ""
+    echo "   nano .env  (or use your preferred editor)"
     echo ""
     exit 1
 fi
 
-# Check if SUNO_API_KEY is set in .env
-if ! grep -q "SUNO_API_KEY=" .env; then
-    echo "[ERROR] SUNO_API_KEY not found in .env file."
-    echo "        Add: SUNO_API_KEY=your_api_key_here"
+# ========== Validate API Key ==========
+if grep -q "your_api_key_here" .env; then
+    echo ""
+    echo "❌ API key is not configured!"
+    echo "   Edit .env and replace 'your_api_key_here' with your actual key."
+    echo "   Get your key at: https://sunoapi.org/api-key"
+    echo ""
     exit 1
 fi
 
-# Check if API key is still the placeholder
-if grep -q "SUNO_API_KEY=your_api_key_here" .env; then
-    echo "[ERROR] SUNO_API_KEY is still set to the placeholder value."
-    echo "        Please edit .env and add your real API key."
-    exit 1
-fi
+echo "✅ .env configured"
 
-# Check if SUNO_API_BASE is set
-if ! grep -q "SUNO_API_BASE=" .env; then
-    echo "[WARN] SUNO_API_BASE not found in .env, will use default."
-fi
-
-# Check if PORT is set
-if ! grep -q "PORT=" .env; then
-    echo "[WARN] PORT not found in .env, will use default 3000."
-fi
-
-echo "[OK] Configuration verified."
-echo ""
-
-# Check if node_modules exists
+# ========== Install dependencies ==========
 if [ ! -d "node_modules" ]; then
-    echo "[INFO] Installing dependencies..."
+    echo ""
+    echo "📦 Installing dependencies..."
     npm install
-    echo "[OK] Dependencies installed."
-    echo ""
-fi
-
-# Read PORT from .env (default 3000)
-PORT=$(grep "^PORT=" .env 2>/dev/null | cut -d'=' -f2 || echo "3000")
-PORT=${PORT:-3000}
-
-# Kill any process on the port
-if lsof -Pi :"$PORT" -sTCP:LISTEN -t &> /dev/null; then
-    echo "[INFO] Killing existing process on port $PORT"
-    kill $(lsof -Pi :"$PORT" -sTCP:LISTEN -t) 2>/dev/null || true
-    sleep 1
-fi
-
-echo "[INFO] Starting server..."
-echo ""
-
-# Start server in background
-node server.js &
-SERVER_PID=$!
-
-# Wait for server to be ready
-echo "[INFO] Waiting for server to start..."
-RETRIES=0
-while [ $RETRIES -lt 15 ]; do
-    sleep 1
-    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$PORT" 2>/dev/null | grep -q "200"; then
-        break
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to install dependencies!"
+        exit 1
     fi
-    RETRIES=$((RETRIES + 1))
-done
-
-if [ $RETRIES -ge 15 ]; then
-    echo "[ERROR] Server did not start in time."
-    kill $SERVER_PID 2>/dev/null || true
-    exit 1
+    echo "✅ Dependencies installed"
+else
+    echo "✅ Dependencies installed"
 fi
 
-sleep 1
-
-echo ""
-echo "[OK] Server is running at http://localhost:$PORT"
-echo "[OK] Tracks will be saved to: $(pwd)/done/"
-echo ""
-echo "[INFO] Opening browser..."
-
-# Open default browser (macOS / Linux)
-if command -v xdg-open &> /dev/null; then
-    xdg-open "http://localhost:$PORT" &
-elif command -v open &> /dev/null; then
-    open "http://localhost:$PORT"
+# ========== Verify packages ==========
+echo "🔍 Verifying packages..."
+npm ls express --depth=0 > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "📦 Missing packages detected, installing..."
+    npm install
 fi
+echo "✅ All packages verified"
 
+# ========== Start Server ==========
 echo ""
-echo "  =========================================="
-echo "   Server is running. Press Ctrl+C to stop."
-echo "   Tracks are saved to the \"done\" folder."
-echo "  =========================================="
+echo "🚀 Starting server..."
+echo "─────────────────────────────────────────"
 echo ""
 
-# Trap Ctrl+C to clean up
-cleanup() {
-    echo ""
-    echo "[INFO] Shutting down server..."
-    kill $SERVER_PID 2>/dev/null || true
-    exit 0
-}
-trap cleanup SIGINT SIGTERM
+# Open browser after delay
+(sleep 3 && (
+    if command -v xdg-open &> /dev/null; then
+        xdg-open http://localhost:3000
+    elif command -v open &> /dev/null; then
+        open http://localhost:3000
+    fi
+)) &
 
-# Wait for server process
-wait $SERVER_PID
+# Start server
+node server.js

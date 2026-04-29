@@ -1,7 +1,7 @@
 /**
- * Get Music - Suno AI Music Generator
+ * Get Music From Suno — AI Music Generator
  * Backend server (Express.js)
- * Version: 1.1.0
+ * Version: 1.3.0
  */
 
 require('dotenv').config();
@@ -25,7 +25,52 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ---------- Utility ----------
+// ========== Console Styling ==========
+const C = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  red: '\x1b[31m',
+  white: '\x1b[37m',
+  bgGreen: '\x1b[42m',
+  bgRed: '\x1b[41m',
+  bgYellow: '\x1b[43m',
+  bgBlue: '\x1b[44m',
+  bgMagenta: '\x1b[45m',
+  bgCyan: '\x1b[46m',
+};
+
+function log(icon, label, msg, color = C.white) {
+  const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+  console.log(`${C.dim}${timestamp}${C.reset} ${icon}  ${C.bold}${color}${label}${C.reset} ${msg}`);
+}
+
+function logSuccess(label, msg) { log('✅', label, msg, C.green); }
+function logInfo(label, msg) { log('ℹ️', label, msg, C.cyan); }
+function logWarn(label, msg) { log('⚠️', label, msg, C.yellow); }
+function logError(label, msg) { log('❌', label, msg, C.red); }
+function logStep(label, msg) { log('🔄', label, msg, C.blue); }
+function logSave(label, msg) { log('💾', label, msg, C.magenta); }
+function logMusic(label, msg) { log('🎵', label, msg, C.cyan); }
+
+function drawBox(lines) {
+  const maxLen = Math.max(...lines.map(l => l.replace(/\x1b\[[0-9;]*m/g, '').length));
+  const border = '═'.repeat(maxLen + 2);
+  console.log(`\n${C.cyan}╔${border}╗${C.reset}`);
+  lines.forEach(line => {
+    const cleanLen = line.replace(/\x1b\[[0-9;]*m/g, '').length;
+    const padding = ' '.repeat(maxLen - cleanLen);
+    console.log(`${C.cyan}║${C.reset} ${line}${padding} ${C.cyan}║${C.reset}`);
+  });
+  console.log(`${C.cyan}╚${border}╝${C.reset}\n`);
+}
+
+// ========== API Utility ==========
 async function apiFetch(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
   const headers = {
@@ -33,36 +78,32 @@ async function apiFetch(endpoint, options = {}) {
     'Content-Type': 'application/json',
     ...options.headers,
   };
-  console.log(`[API Request] ${options.method || 'GET'} ${url}`);
-  if (options.body) console.log(`[API Body] ${options.body}`);
+
+  logStep('API', `${options.method || 'GET'} ${url.replace(API_BASE, '')}`);
+
   const res = await fetch(url, { ...options, headers });
-  const text = await res.text();
-  console.log(`[API Response] Status: ${res.status} | Body: ${text.slice(0, 500)}`);
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { code: res.status, msg: text };
+  const body = await res.json();
+
+  if (body.code !== 200) {
+    logWarn('API', `Response code ${body.code}: ${body.msg || 'unknown'}`);
   }
+
+  return body;
 }
 
-/**
- * Sanitize a string for use as a filename.
- * Removes illegal characters and trims to a reasonable length.
- */
 function sanitizeFilename(name) {
-  return name
-    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 80) || 'untitled';
+  return name.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').replace(/\s+/g, ' ').trim().slice(0, 100);
 }
 
-// ---------- Routes ----------
+// ========== Routes ==========
 
 // Generate music
 app.post('/api/generate', async (req, res) => {
   try {
     const { prompt, customMode, instrumental, model, title, style } = req.body;
+
+    logMusic('Generate', `Model: ${C.bold}${model || 'V5_5'}${C.reset} | Prompt: "${(prompt || '').slice(0, 50)}..."`);
+
     const payload = {
       prompt: prompt || '',
       customMode: customMode || false,
@@ -79,11 +120,13 @@ app.post('/api/generate', async (req, res) => {
     });
 
     if (result.code === 200) {
+      logSuccess('Generate', `Task created: ${C.bold}${result.data.taskId}${C.reset}`);
       return res.json({ success: true, taskId: result.data.taskId });
     }
+    logError('Generate', result.msg || 'Generation failed');
     return res.status(400).json({ success: false, error: result.msg || 'Generation failed' });
   } catch (err) {
-    console.error('[Generate Error]', err.message);
+    logError('Generate', err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -96,16 +139,26 @@ app.get('/api/status/:taskId', async (req, res) => {
     });
 
     if (result.code === 200) {
+      const sunoData = result.data?.response?.sunoData;
+      if (sunoData && sunoData.length > 0) {
+        const statusFlag = result.data?.status || result.data?.successFlag;
+        if (statusFlag === 'SUCCESS' || statusFlag === 'FIRST_SUCCESS') {
+          logSuccess('Status', `Task ${req.params.taskId.slice(0, 12)}... → ${C.bold}${statusFlag}${C.reset} (${sunoData.length} track${sunoData.length > 1 ? 's' : ''})`);
+          sunoData.forEach((t, i) => {
+            logMusic('Track', `#${i + 1} "${t.title || 'untitled'}" | ID: ${(t.id || '').slice(0, 8)}`);
+          });
+        }
+      }
       return res.json({ success: true, data: result.data });
     }
     return res.status(400).json({ success: false, error: result.msg || 'Status check failed' });
   } catch (err) {
-    console.error('[Status Error]', err.message);
+    logError('Status', err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Initiate WAV conversion for a completed audio
+// Initiate WAV conversion
 app.post('/api/wav/generate', async (req, res) => {
   try {
     const { taskId, audioId } = req.body;
@@ -117,22 +170,23 @@ app.post('/api/wav/generate', async (req, res) => {
     if (taskId) payload.taskId = taskId;
     if (audioId) payload.audioId = audioId;
 
-    console.log(`[WAV Generate] Requesting conversion: taskId=${taskId}, audioId=${audioId}`);
+    logStep('WAV', `Converting to WAV: audioId=${(audioId || '').slice(0, 12)}...`);
+
     const result = await apiFetch('/wav/generate', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
 
-    console.log(`[WAV Generate] Full response:`, JSON.stringify(result).slice(0, 500));
-
     if (result.code === 200) {
       const wavTaskId = result.data?.taskId || result.data;
-      console.log(`[WAV Generate] Success, wavTaskId: ${wavTaskId}`);
+      logSuccess('WAV', `Conversion started, wavTaskId: ${C.bold}${wavTaskId}${C.reset}`);
       return res.json({ success: true, wavTaskId });
     }
-    return res.status(400).json({ success: false, error: result.msg || 'WAV generation failed' });
+
+    logWarn('WAV', `Code ${result.code}: ${result.msg || 'WAV generation failed'}`);
+    return res.status(400).json({ success: false, error: result.msg || 'WAV generation failed', code: result.code });
   } catch (err) {
-    console.error('[WAV Generate Error]', err.message);
+    logError('WAV', err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -144,14 +198,23 @@ app.get('/api/wav/status/:taskId', async (req, res) => {
       method: 'GET',
     });
 
-    console.log(`[WAV Status] taskId=${req.params.taskId} | Status: ${result.data?.status} | Response keys: ${JSON.stringify(Object.keys(result.data?.response || {}))}`);
+    if (result.code === 200 && result.data) {
+      const flag = result.data.successFlag || result.data.status;
+      const wavUrl = result.data.response?.audioWavUrl;
 
-    if (result.code === 200) {
+      if (flag === 'SUCCESS' && wavUrl) {
+        logSuccess('WAV', `Conversion complete! URL: ${wavUrl.slice(0, 60)}...`);
+      } else if (flag === 'PENDING') {
+        logStep('WAV', `Still converting... (${req.params.taskId.slice(0, 12)})`);
+      } else {
+        logWarn('WAV', `Flag: ${flag}`);
+      }
+
       return res.json({ success: true, data: result.data });
     }
     return res.status(400).json({ success: false, error: result.msg || 'WAV status check failed' });
   } catch (err) {
-    console.error('[WAV Status Error]', err.message);
+    logError('WAV Status', err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -161,12 +224,12 @@ app.get('/api/balance', async (req, res) => {
   try {
     const result = await apiFetch('/generate/credit', { method: 'GET' });
     if (result.code === 200) {
+      logInfo('Balance', `Credits: ${C.bold}${result.data}${C.reset}`);
       return res.json({ success: true, data: result.data });
     }
-    // Fallback: return whatever we got
     return res.json({ success: true, data: result.data || result, raw: true });
   } catch (err) {
-    console.error('[Balance Error]', err.message);
+    logError('Balance', err.message);
     return res.json({ success: false, data: { credits: 'N/A' }, error: err.message });
   }
 });
@@ -189,7 +252,7 @@ app.get('/api/proxy-audio', async (req, res) => {
     const arrayBuffer = await response.arrayBuffer();
     res.send(Buffer.from(arrayBuffer));
   } catch (err) {
-    console.error('[Proxy Error]', err.message);
+    logError('Proxy', err.message);
     res.status(500).send('Proxy error');
   }
 });
@@ -197,23 +260,23 @@ app.get('/api/proxy-audio', async (req, res) => {
 // Save track to done/ folder
 app.post('/api/save-track', async (req, res) => {
   try {
-    const { url, title, id } = req.body;
+    const { url, title, id, format } = req.body;
     if (!url) return res.status(400).json({ success: false, error: 'Missing url' });
 
     const safeName = sanitizeFilename(title || 'track');
     const shortId = (id || '').slice(0, 8);
-    const isWav = url.includes('.wav');
-    const ext = isWav ? '.wav' : '.mp3';
+    const ext = (format === 'wav' || url.includes('.wav')) ? '.wav' : '.mp3';
     const filename = `${safeName}_${shortId}${ext}`;
     const filepath = path.join(DONE_DIR, filename);
 
     // Check if already saved
     if (fs.existsSync(filepath)) {
-      console.log(`[Save] Already exists: ${filename}`);
+      logInfo('Save', `Already exists: ${filename}`);
       return res.json({ success: true, filename, alreadyExists: true });
     }
 
-    console.log(`[Save] Downloading: ${url.slice(0, 80)}...`);
+    logSave('Save', `Downloading ${C.bold}${ext.toUpperCase()}${C.reset}: ${url.slice(0, 60)}...`);
+
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Download failed: ${response.status}`);
 
@@ -221,11 +284,11 @@ app.post('/api/save-track', async (req, res) => {
     fs.writeFileSync(filepath, Buffer.from(arrayBuffer));
 
     const sizeMB = (arrayBuffer.byteLength / (1024 * 1024)).toFixed(2);
-    console.log(`[Save] ✅ Saved: ${filename} (${sizeMB} MB)`);
+    logSuccess('Save', `${C.bold}${filename}${C.reset} (${sizeMB} MB)`);
 
     return res.json({ success: true, filename, sizeMB });
   } catch (err) {
-    console.error('[Save Error]', err.message);
+    logError('Save', err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -252,8 +315,14 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`[Get Music] Server running at http://localhost:${PORT}`);
-  console.log(`[Get Music] API Base: ${API_BASE}`);
-  console.log(`[Get Music] API Key: ${API_KEY ? API_KEY.slice(0, 6) + '...' : 'NOT SET'}`);
-  console.log(`[Get Music] Tracks folder: ${DONE_DIR}`);
+  drawBox([
+    `${C.bold}${C.cyan}🎵 Get Music From Suno v1.3.0${C.reset}`,
+    ``,
+    `${C.green}Server${C.reset}     http://localhost:${PORT}`,
+    `${C.blue}API Base${C.reset}   ${API_BASE}`,
+    `${C.yellow}API Key${C.reset}    ${API_KEY ? API_KEY.slice(0, 6) + '••••••' : `${C.red}NOT SET!${C.reset}`}`,
+    `${C.magenta}Tracks${C.reset}     ${DONE_DIR}`,
+    ``,
+    `${C.dim}Ready for music generation...${C.reset}`,
+  ]);
 });

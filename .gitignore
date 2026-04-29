@@ -5,3 +5,7 @@ done/*.mp3
 done/*.wav
 *.log
 dist/
+
+# AI config docs (personal, not tracked)
+CLAUDE.md
+GEMINI.md

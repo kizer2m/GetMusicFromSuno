@@ -264,6 +264,10 @@
               const sunoData = response?.sunoData;
               if (sunoData && sunoData.length > 0) {
                 const first = sunoData[0];
+                // Log all available fields to debug WAV URL availability
+                console.log(`[Poll] sunoData[0] keys:`, Object.keys(first));
+                console.log(`[Poll] audioUrl: ${first.audioUrl?.slice(0, 80)}`);
+                if (first.wavAudioUrl) console.log(`[Poll] wavAudioUrl: ${first.wavAudioUrl.slice(0, 80)}`);
                 state.tracks[trackIdx].status = 'success';
                 state.tracks[trackIdx].audioUrl = first.audioUrl || first.streamAudioUrl;
                 state.tracks[trackIdx].imageUrl = first.imageUrl || first.sourceImageUrl;
@@ -273,7 +277,8 @@
 
                 // Request WAV conversion if format is wav, otherwise save MP3 directly
                 if (state.tracks[trackIdx].format === 'wav') {
-                  requestWavConversion(trackIdx, taskId);
+                  // Delay WAV request — API needs time after generation
+                  setTimeout(() => requestWavConversion(trackIdx, taskId), 5000);
                 } else {
                   autoSaveTrack(trackIdx);
                 }
@@ -301,7 +306,8 @@
                     // Request WAV for extra tracks too (if format is wav)
                     if (extraTrack.audioUrl) {
                       if (state.tracks[trackIdx].format === 'wav') {
-                        requestWavConversion(newIdx, taskId);
+                        const capturedIdx = newIdx;
+                        setTimeout(() => requestWavConversion(capturedIdx, taskId), 6000);
                       } else {
                         autoSaveTrack(newIdx);
                       }
@@ -371,6 +377,9 @@
     const track = state.tracks[index];
     if (!track || !track.audioUrl || track.saved) return;
 
+    // Determine actual format for saving
+    const saveFormat = track.wavReady ? 'wav' : (track.format || 'mp3');
+
     try {
       const res = await fetch('/api/save-track', {
         method: 'POST',
@@ -379,6 +388,7 @@
           url: track.audioUrl,
           title: track.title,
           id: track.id,
+          format: saveFormat,
         }),
       });
       const json = await res.json();
@@ -387,7 +397,7 @@
         track.saved = true;
         track.savedFilename = json.filename;
         updateTrackInPlaylist(index);
-        console.log(`[Auto-Save] ✅ ${json.filename} (${json.sizeMB || '?'} MB)`);
+        console.log(`[Auto-Save] ✅ ${json.filename} (${json.sizeMB || '?'} MB) [${saveFormat.toUpperCase()}]`);
       }
     } catch (err) {
       console.error(`[Auto-Save] Failed for ${track.title}:`, err);
@@ -659,40 +669,38 @@
       try {
         const res = await fetch(`/api/wav/status/${wavTaskId}`);
         const json = await res.json();
-        console.log(`[WAV] Poll #${i + 1} for track ${trackIdx}:`, json.data?.status || json);
+        // API uses 'successFlag' (not 'status')
+        const flag = json.data?.successFlag || json.data?.status;
+        console.log(`[WAV] Poll #${i + 1} for track ${trackIdx}: flag=${flag}`);
 
         if (json.success && json.data) {
-          const status = json.data.status;
-
-          if (status === 'SUCCESS') {
-            // Extract WAV download URL — try all possible response fields
+          if (flag === 'SUCCESS') {
+            // API returns WAV URL as 'audioWavUrl' (per docs)
             const resp = json.data.response || {};
-            const wavUrl = resp.wavAudioUrl || resp.audioUrl || resp.url || resp.downloadUrl;
+            const wavUrl = resp.audioWavUrl || resp.wavAudioUrl || resp.audioUrl || resp.url;
             if (wavUrl && state.tracks[trackIdx]) {
               console.log(`[WAV] ✅ Ready: "${state.tracks[trackIdx].title}" → ${wavUrl.slice(0, 80)}`);
               state.tracks[trackIdx].audioUrl = wavUrl;
               state.tracks[trackIdx].wavReady = true;
               updateTrackInPlaylist(trackIdx);
-              // Update player badge if this track is currently playing
               if (state.currentIndex === trackIdx) {
                 DOM.formatBadge.textContent = 'WAV';
               }
               autoSaveTrack(trackIdx);
             } else {
-              console.warn(`[WAV] SUCCESS but no URL found in response:`, resp);
+              console.warn(`[WAV] SUCCESS but no URL found in response:`, JSON.stringify(resp));
               markAsMp3Fallback(trackIdx);
             }
             return;
-          } else if (status === 'FAILED' || status === 'CREATE_TASK_FAILED') {
-            console.warn(`[WAV] Conversion failed for track ${trackIdx}, status: ${status}`);
+          } else if (flag === 'CREATE_TASK_FAILED' || flag === 'GENERATE_WAV_FAILED') {
+            console.warn(`[WAV] Conversion failed for track ${trackIdx}, flag: ${flag}`);
             markAsMp3Fallback(trackIdx);
             return;
           }
-          // else still processing, continue polling
+          // PENDING — continue polling
         }
       } catch (err) {
         console.warn(`[WAV] Poll error for track ${trackIdx}:`, err.message);
-        // network error, keep trying
       }
     }
 

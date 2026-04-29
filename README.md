@@ -4,7 +4,7 @@
 
 ## Version
 
-**1.2.1**
+**1.3.0**
 
 ## Features
 
@@ -13,13 +13,14 @@
 - **Real-time Progress** — Live progress bar and status updates
 - **Built-in Playlist** — All generated tracks appear in a sleek playlist
 - **Format Selector** — Choose WAV (lossless) or MP3 (compressed) download format
-- **WAV Format** — Automatic WAV conversion pipeline (MP3 fallback)
+- **WAV Conversion** — Automatic WAV conversion via Suno API pipeline
 - **Dynamic Format Badge** — Shows WAV or MP3 in player and playlist per track
 - **Mini Player** — Play, pause, skip, rewind/forward 10s, and seek through tracks
 - **Interactive Seek Bar** — Full-width seek bar with mouse drag support
 - **Volume Control** — Toggle mute/unmute with one click
 - **Auto-Save** — Tracks automatically download to `done/` folder
 - **API Balance** — Monitor your remaining credits in the header
+- **Styled Console** — Beautiful server logs with colors, icons, and progress indicators
 
 ## Quick Start
 
@@ -40,11 +41,12 @@
 ## Start Scripts
 
 The project includes ready-to-use start scripts that automatically:
+- ✅ Check Node.js and npm are installed
+- ✅ Verify all npm dependencies are present
 - ✅ Create the `done/` folder for saved tracks
 - ✅ Check for `.env` file and create a template if missing
 - ✅ Validate that `SUNO_API_KEY` is set (not a placeholder)
-- ✅ Warn if `SUNO_API_BASE` or `PORT` are missing
-- ✅ Install `node_modules` if needed
+- ✅ Install missing packages automatically
 - ✅ Start the server and open the browser
 
 ### Windows
@@ -83,6 +85,22 @@ chmod +x start.sh
 | Rewind/Forward | Skip ±10 seconds |
 | Seek bar | Click or drag to jump to any position |
 | Volume icon | Mute/unmute audio |
+
+## Changelog
+
+### v1.3.0
+- Fixed WAV conversion pipeline (correct API field mapping)
+- Styled server console with ANSI colors and icons
+- Start scripts now verify all dependencies
+- Added CLAUDE.md/GEMINI.md to .gitignore
+
+### v1.2.1
+- Fixed format badge logic in playlist and player
+- Cross-platform start scripts
+
+### v1.2.0
+- WAV/MP3 format selector
+- Dynamic format badges
 
 ## Tech Stack
 
