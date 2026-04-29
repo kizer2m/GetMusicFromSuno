@@ -1,6 +1,6 @@
 /**
  * Get Music — Frontend Application Logic
- * Version: 1.4.0
+ * Version: loaded dynamically from package.json via /api/version
  *
  * Handles: Suno API generation, polling, playlist management,
  *          audio playback (mini-player), auto-save to done/, and UI state.
@@ -86,7 +86,22 @@
     initTheme();
     bindEvents();
     fetchBalance();
+    fetchVersion();
     updateProgressUI();
+  }
+
+  // ========== VERSION ==========
+  async function fetchVersion() {
+    try {
+      const res = await fetch('/api/version');
+      const json = await res.json();
+      if (json.version) {
+        const badge = document.querySelector('.version-badge');
+        if (badge) badge.textContent = `v${json.version}`;
+      }
+    } catch {
+      // Silently ignore — badge keeps default text
+    }
   }
 
   // ========== EVENTS ==========

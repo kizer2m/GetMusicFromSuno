@@ -171,7 +171,7 @@ GetMusicFromSuno/
 ├── start.bat          # Windows start script
 ├── start.sh           # macOS/Linux start script
 ├── .env               # API key configuration (not committed)
-├── package.json       # Dependencies and scripts
+├── package.json       # Dependencies, scripts, and VERSION (single source of truth)
 └── README.md          # This file
 ```
 
@@ -182,7 +182,8 @@ GetMusicFromSuno/
 ### v1.5.0
 - 🌓 Dark/Light theme toggle with sun/moon icon
 - Theme persists across sessions (localStorage)
-- Dynamic version display from package.json
+- Centralized version from `package.json` — auto-propagates to server, frontend badge, and start scripts
+- `/api/version` endpoint for dynamic version display
 - Fixed version mismatch in UI
 - Smooth CSS transitions on theme switch
 

@@ -1,9 +1,13 @@
 @echo off
-title Get Music From Suno v1.5.0
+
+:: Read version from package.json (single source of truth)
+for /f "tokens=2 delims=:, " %%a in ('findstr /C:"\"version\"" package.json') do set APP_VER=%%~a
+if "%APP_VER%"=="" set APP_VER=unknown
+title Get Music From Suno v%APP_VER%
 
 echo.
 echo  ==========================================
-echo    Get Music From Suno v1.5.0
+echo    Get Music From Suno v%APP_VER%
 echo  ==========================================
 echo.
 

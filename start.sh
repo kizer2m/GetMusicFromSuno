@@ -1,12 +1,16 @@
 #!/bin/bash
 
+# Read version from package.json (single source of truth)
+APP_VER=$(grep '"version"' package.json | head -1 | sed 's/.*"\([0-9][0-9.]*\)".*/\1/')
+[ -z "$APP_VER" ] && APP_VER="unknown"
+
 # ========================================
-# Get Music From Suno v1.5.0
+# Get Music From Suno v$APP_VER
 # ========================================
 
 echo ""
 echo "=========================================="
-echo "   Get Music From Suno v1.5.0"
+echo "   Get Music From Suno v${APP_VER}"
 echo "=========================================="
 echo ""
 

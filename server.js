@@ -303,6 +303,11 @@ app.post('/api/save-track', async (req, res) => {
   }
 });
 
+// Get app version (from package.json — single source of truth)
+app.get('/api/version', (req, res) => {
+  res.json({ version: pkg.version });
+});
+
 // List saved tracks in done/ folder
 app.get('/api/saved-tracks', (req, res) => {
   try {
