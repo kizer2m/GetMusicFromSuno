@@ -274,6 +274,7 @@
                 state.tracks[trackIdx].title = first.title || state.tracks[trackIdx].title;
                 state.tracks[trackIdx].lyrics = first.prompt || first.lyric || state.tracks[trackIdx].lyrics;
                 state.tracks[trackIdx].id = first.id || state.tracks[trackIdx].id;
+                if (!state.tracks[trackIdx].version) state.tracks[trackIdx].version = 'V1';
 
                 if (status === 'SUCCESS' && !state.tracks[trackIdx]._wavRequested) {
                   // Full SUCCESS — trigger WAV or save MP3
@@ -307,6 +308,7 @@
                       lyrics: extra.prompt || extra.lyric,
                       saved: false,
                       format: state.tracks[trackIdx].format,
+                      version: `V${si + 1}`,
                     };
                     if (!state.tracks.find(t => t.id === extraTrack.id)) {
                       state.tracks.push(extraTrack);
@@ -401,6 +403,7 @@
           title: track.title,
           id: track.id,
           format: saveFormat,
+          version: track.version || 'V1',
         }),
       });
       const json = await res.json();

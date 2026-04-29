@@ -260,13 +260,13 @@ app.get('/api/proxy-audio', async (req, res) => {
 // Save track to done/ folder
 app.post('/api/save-track', async (req, res) => {
   try {
-    const { url, title, id, format } = req.body;
+    const { url, title, id, format, version } = req.body;
     if (!url) return res.status(400).json({ success: false, error: 'Missing url' });
 
     const safeName = sanitizeFilename(title || 'track');
-    const shortId = (id || '').slice(0, 8);
+    const ver = version || 'V1';
     const ext = (format === 'wav' || url.includes('.wav')) ? '.wav' : '.mp3';
-    const filename = `${safeName}_${shortId}${ext}`;
+    const filename = `${safeName}_${ver}${ext}`;
     const filepath = path.join(DONE_DIR, filename);
 
     // Check if already saved

@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # ========================================
-# Get Music From Suno v1.3.0
+# Get Music From Suno v1.4.0
 # ========================================
 
 echo ""
 echo "=========================================="
-echo "   Get Music From Suno v1.3.0"
+echo "   Get Music From Suno v1.4.0"
 echo "=========================================="
 echo ""
 

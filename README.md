@@ -4,7 +4,7 @@
 
 ## Version
 
-**1.3.0**
+**1.4.0**
 
 ## Features
 
@@ -18,7 +18,8 @@
 - **Mini Player** — Play, pause, skip, rewind/forward 10s, and seek through tracks
 - **Interactive Seek Bar** — Full-width seek bar with mouse drag support
 - **Volume Control** — Toggle mute/unmute with one click
-- **Auto-Save** — Tracks automatically download to `done/` folder
+- **Auto-Save** — Tracks automatically download to `done/` folder as `TrackName_V1.wav`, `TrackName_V2.wav`
+- **Versioned Filenames** — Multi-version tracks saved with V1, V2, V3... suffixes
 - **API Balance** — Monitor your remaining credits in the header
 - **Styled Console** — Beautiful server logs with colors, icons, and progress indicators
 
@@ -51,6 +52,7 @@ The project includes ready-to-use start scripts that automatically:
 - ✅ Check for `.env` file and create a template if missing
 - ✅ Validate that `SUNO_API_KEY` is set (not a placeholder)
 - ✅ Install missing packages automatically
+- ✅ Kill existing processes on port 3000
 - ✅ Start the server and open the browser
 
 ### Windows
@@ -91,6 +93,14 @@ chmod +x start.sh
 | Volume icon | Mute/unmute audio |
 
 ## Changelog
+
+### v1.4.0
+- Versioned filenames: tracks saved as `TrackName_V1.wav`, `TrackName_V2.wav`
+- Fixed WAV pipeline: correct polling (wait for full SUCCESS before WAV conversion)
+- Fixed infinite polling bug (variable scoping in FIRST_SUCCESS handler)
+- Added retry logic for WAV conversion (3 attempts with exponential backoff)
+- Start scripts kill existing port 3000 process before starting
+- Removed accidental `]` file artifact
 
 ### v1.3.0
 - Fixed WAV conversion pipeline (correct API field mapping)
