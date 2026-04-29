@@ -161,16 +161,17 @@ app.get('/api/status/:taskId', async (req, res) => {
 // Initiate WAV conversion
 app.post('/api/wav/generate', async (req, res) => {
   try {
-    const { taskId, audioId } = req.body;
-    if (!taskId && !audioId) {
-      return res.status(400).json({ success: false, error: 'Missing taskId or audioId' });
+    const { audioId } = req.body;
+    if (!audioId) {
+      return res.status(400).json({ success: false, error: 'Missing audioId' });
     }
 
-    const payload = { callBackUrl: 'https://example.com/callback' };
-    if (taskId) payload.taskId = taskId;
-    if (audioId) payload.audioId = audioId;
+    const payload = {
+      audioId,
+      callBackUrl: 'https://example.com/callback',
+    };
 
-    logStep('WAV', `Converting to WAV: audioId=${(audioId || '').slice(0, 12)}...`);
+    logStep('WAV', `Converting to WAV: audioId=${audioId.slice(0, 16)}...`);
 
     const result = await apiFetch('/wav/generate', {
       method: 'POST',
