@@ -264,58 +264,61 @@
               const sunoData = response?.sunoData;
               if (sunoData && sunoData.length > 0) {
                 const first = sunoData[0];
-                console.log(`[Poll] Status: ${status} | sunoData[0] keys:`, Object.keys(first));
+                const alreadyProcessed = state.tracks[trackIdx].status === 'success';
+
+                // Update track data (always, in case URLs changed)
                 state.tracks[trackIdx].status = 'success';
-                state.tracks[trackIdx].audioUrl = first.audioUrl || first.streamAudioUrl;
-                state.tracks[trackIdx].imageUrl = first.imageUrl || first.sourceImageUrl;
+                state.tracks[trackIdx].audioUrl = first.audioUrl || first.streamAudioUrl || state.tracks[trackIdx].audioUrl;
+                state.tracks[trackIdx].imageUrl = first.imageUrl || first.sourceImageUrl || state.tracks[trackIdx].imageUrl;
                 state.tracks[trackIdx].title = first.title || state.tracks[trackIdx].title;
-                state.tracks[trackIdx].lyrics = first.prompt || first.lyric;
+                state.tracks[trackIdx].lyrics = first.prompt || first.lyric || state.tracks[trackIdx].lyrics;
                 state.tracks[trackIdx].id = first.id || state.tracks[trackIdx].id;
 
-                // WAV conversion only on full SUCCESS (FIRST_SUCCESS = task still processing)
-                if (status === 'SUCCESS') {
+                if (status === 'SUCCESS' && !state.tracks[trackIdx]._wavRequested) {
+                  // Full SUCCESS — trigger WAV or save MP3
                   if (state.tracks[trackIdx].format === 'wav') {
-                    // Delay — API needs time to finalize audio after SUCCESS
-                    setTimeout(() => requestWavConversion(trackIdx), 15000);
-                  } else {
+                    state.tracks[trackIdx]._wavRequested = true;
+                    setTimeout(() => requestWavConversion(trackIdx, taskId), 15000);
+                  } else if (!state.tracks[trackIdx].saved) {
                     autoSaveTrack(trackIdx);
                   }
-                } else {
-                  // FIRST_SUCCESS: save MP3 immediately if format is MP3
-                  if (state.tracks[trackIdx].format !== 'wav') {
+                } else if (status === 'FIRST_SUCCESS') {
+                  // Save MP3 immediately if format is MP3 and not saved yet
+                  if (state.tracks[trackIdx].format !== 'wav' && !state.tracks[trackIdx].saved) {
                     autoSaveTrack(trackIdx);
                   }
-                  // Keep polling — we need full SUCCESS for WAV conversion
+                  // Keep polling for full SUCCESS (needed for WAV)
                   stillActive.push(taskId);
                 }
 
-                // Add additional tracks from the same task (Suno generates 2 per task)
-                for (let si = 1; si < sunoData.length; si++) {
-                  const extra = sunoData[si];
-                  const extraTrack = {
-                    id: extra.id || (Date.now() + '_extra_' + si),
-                    taskId: taskId + '_sub_' + si,
-                    title: extra.title || `Song #${state.tracks.length + 1}`,
-                    prompt: extra.prompt || state.tracks[trackIdx].prompt,
-                    status: (extra.audioUrl || extra.streamAudioUrl) ? 'success' : 'generating',
-                    audioUrl: extra.audioUrl || extra.streamAudioUrl,
-                    imageUrl: extra.imageUrl || extra.sourceImageUrl,
-                    lyrics: extra.prompt || extra.lyric,
-                    saved: false,
-                    format: state.tracks[trackIdx].format, // inherit format from parent
-                  };
-                  // Only add if not already present
-                  if (!state.tracks.find(t => t.id === extraTrack.id)) {
-                    state.tracks.push(extraTrack);
-                    const newIdx = state.tracks.length - 1;
-                    addTrackToPlaylist(extraTrack, newIdx);
-                    // Request WAV for extra tracks too (if format is wav)
-                    if (extraTrack.audioUrl && status === 'SUCCESS') {
-                      if (state.tracks[trackIdx].format === 'wav') {
-                        const capturedIdx = newIdx;
-                        setTimeout(() => requestWavConversion(capturedIdx), 17000);
-                      } else {
-                        autoSaveTrack(newIdx);
+                // Add additional tracks (only on first processing)
+                if (!alreadyProcessed) {
+                  for (let si = 1; si < sunoData.length; si++) {
+                    const extra = sunoData[si];
+                    const extraTrack = {
+                      id: extra.id || (Date.now() + '_extra_' + si),
+                      taskId: taskId + '_sub_' + si,
+                      title: extra.title || `Song #${state.tracks.length + 1}`,
+                      prompt: extra.prompt || state.tracks[trackIdx].prompt,
+                      status: (extra.audioUrl || extra.streamAudioUrl) ? 'success' : 'generating',
+                      audioUrl: extra.audioUrl || extra.streamAudioUrl,
+                      imageUrl: extra.imageUrl || extra.sourceImageUrl,
+                      lyrics: extra.prompt || extra.lyric,
+                      saved: false,
+                      format: state.tracks[trackIdx].format,
+                    };
+                    if (!state.tracks.find(t => t.id === extraTrack.id)) {
+                      state.tracks.push(extraTrack);
+                      const newIdx = state.tracks.length - 1;
+                      addTrackToPlaylist(extraTrack, newIdx);
+                      if (extraTrack.audioUrl && status === 'SUCCESS') {
+                        if (state.tracks[trackIdx].format === 'wav') {
+                          const capturedIdx = newIdx;
+                          state.tracks[capturedIdx]._wavRequested = true;
+                          setTimeout(() => requestWavConversion(capturedIdx, taskId), 17000);
+                        } else {
+                          autoSaveTrack(newIdx);
+                        }
                       }
                     }
                   }
@@ -323,14 +326,11 @@
               } else {
                 state.tracks[trackIdx].status = 'success';
               }
-              state.completed++;
+              if (!alreadyProcessed) {
+                state.completed++;
+              }
               updateTrackInPlaylist(trackIdx);
               updateProgressUI();
-              // If FIRST_SUCCESS was handled but we pushed to stillActive above,
-              // don't double-count on the next SUCCESS poll
-              if (status === 'FIRST_SUCCESS') {
-                state.completed--; // will be re-counted on full SUCCESS
-              }
             } else if (status === 'TEXT_SUCCESS') {
               // Lyrics generated, audio still processing
               const sunoData = response?.sunoData;
@@ -643,18 +643,18 @@
   }
 
   // ========== WAV CONVERSION ==========
-  async function requestWavConversion(trackIdx, retryCount = 0) {
+  async function requestWavConversion(trackIdx, taskId, retryCount = 0) {
     const track = state.tracks[trackIdx];
     if (!track) return;
     const maxRetries = 3;
 
     try {
       const audioId = track.id;
-      console.log(`[WAV] Requesting conversion for "${track.title}" (audioId: ${audioId})${retryCount > 0 ? ` [retry ${retryCount}/${maxRetries}]` : ''}`);
+      console.log(`[WAV] Requesting conversion for "${track.title}" (taskId: ${taskId}, audioId: ${audioId})${retryCount > 0 ? ` [retry ${retryCount}/${maxRetries}]` : ''}`);
       const res = await fetch('/api/wav/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ audioId }),
+        body: JSON.stringify({ taskId, audioId }),
       });
       const json = await res.json();
       console.log(`[WAV] Generate response:`, json);
@@ -662,11 +662,10 @@
       if (json.success && json.wavTaskId) {
         console.log(`[WAV] Conversion started for "${track.title}", wavTaskId: ${json.wavTaskId}`);
         pollWavStatus(trackIdx, json.wavTaskId);
-      } else if (json.code === 400 && retryCount < maxRetries) {
-        // API not ready yet, retry after delay
+      } else if (retryCount < maxRetries) {
         const retryDelay = 15000 * (retryCount + 1);
-        console.warn(`[WAV] API not ready, retrying in ${retryDelay / 1000}s...`);
-        setTimeout(() => requestWavConversion(trackIdx, retryCount + 1), retryDelay);
+        console.warn(`[WAV] API error: ${json.error}, retrying in ${retryDelay / 1000}s...`);
+        setTimeout(() => requestWavConversion(trackIdx, taskId, retryCount + 1), retryDelay);
       } else {
         console.warn(`[WAV] Could not convert "${track.title}": ${json.error}`);
         markAsMp3Fallback(trackIdx);
@@ -674,7 +673,7 @@
     } catch (err) {
       console.error(`[WAV] Request failed for "${track.title}":`, err);
       if (retryCount < maxRetries) {
-        setTimeout(() => requestWavConversion(trackIdx, retryCount + 1), 15000);
+        setTimeout(() => requestWavConversion(trackIdx, taskId, retryCount + 1), 15000);
       } else {
         markAsMp3Fallback(trackIdx);
       }
