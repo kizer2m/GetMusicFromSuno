@@ -262,9 +262,10 @@
 
             if (status === 'SUCCESS' || status === 'FIRST_SUCCESS') {
               const sunoData = response?.sunoData;
+              let alreadyProcessed = state.tracks[trackIdx].status === 'success';
+
               if (sunoData && sunoData.length > 0) {
                 const first = sunoData[0];
-                const alreadyProcessed = state.tracks[trackIdx].status === 'success';
 
                 // Update track data (always, in case URLs changed)
                 state.tracks[trackIdx].status = 'success';
@@ -283,7 +284,7 @@
                     autoSaveTrack(trackIdx);
                   }
                 } else if (status === 'FIRST_SUCCESS') {
-                  // Save MP3 immediately if format is MP3 and not saved yet
+                  // Save MP3 immediately if format is MP3
                   if (state.tracks[trackIdx].format !== 'wav' && !state.tracks[trackIdx].saved) {
                     autoSaveTrack(trackIdx);
                   }
