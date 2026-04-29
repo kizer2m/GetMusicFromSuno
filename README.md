@@ -41,9 +41,16 @@
 
 ## 📸 Screenshots
 
-| Dark Theme | Light Theme |
-|:---:|:---:|
-| *Coming soon* | *Coming soon* |
+<table>
+  <tr>
+    <td align="center"><strong>🌙 Dark Theme</strong></td>
+    <td align="center"><strong>☀️ Light Theme</strong></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/dark-theme.png" width="480" alt="Dark Theme"></td>
+    <td><img src="screenshots/light-theme.png" width="480" alt="Light Theme"></td>
+  </tr>
+</table>
 
 ---
 
