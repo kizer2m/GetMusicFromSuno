@@ -1,10 +1,10 @@
-# Get Music
+# Get Music From Suno
 
 > AI-powered music generator with a premium interface, built on the Suno API.
 
 ## Version
 
-**1.1.0**
+**1.2.0**
 
 ## Features
 
@@ -12,8 +12,10 @@
 - **Batch Generation** — Generate multiple songs from one prompt
 - **Real-time Progress** — Live progress bar and status updates
 - **Built-in Playlist** — All generated tracks appear in a sleek playlist
+- **Format Selector** — Choose WAV (lossless) or MP3 (compressed) download format
 - **WAV Format** — Automatic WAV conversion pipeline (MP3 fallback)
 - **Mini Player** — Play, pause, skip, rewind/forward 10s, and seek through tracks
+- **Dynamic Format Badge** — Shows WAV or MP3 in player and playlist per track
 - **Interactive Seek Bar** — Full-width seek bar with mouse drag support
 - **Volume Control** — Toggle mute/unmute with one click
 - **Auto-Save** — Tracks automatically download to `done/` folder
@@ -41,6 +43,7 @@
 |---------|--------|
 | Prompt textarea | Describe the music you want |
 | Song count | Set how many songs to generate (1-20) |
+| Format selector | Choose WAV or MP3 download format |
 | Generate button | Start the generation process |
 | Reset button | Clear prompt, playlist, and all counters |
 | Double-click track | Play selected track |

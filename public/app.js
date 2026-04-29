@@ -11,7 +11,7 @@
 
   // ========== STATE ==========
   const state = {
-    tracks: [],           // { id, taskId, title, prompt, status, audioUrl, imageUrl, lyrics, saved }
+    tracks: [],           // { id, taskId, title, prompt, status, audioUrl, imageUrl, lyrics, saved, format }
     currentIndex: -1,     // index in tracks[]
     isPlaying: false,
     isMuted: false,
@@ -38,6 +38,7 @@
     btnGenerate: $('#btn-generate'),
     btnReset: $('#btn-reset'),
     modelSelect: $('#model-select'),
+    formatSelect: $('#format-select'),
     // Progress
     progressCounter: $('#progress-counter'),
     progressBarFill: $('#progress-bar-fill'),
@@ -222,6 +223,7 @@
             imageUrl: null,
             lyrics: null,
             saved: false,
+            format: DOM.formatSelect.value, // 'wav' or 'mp3'
           };
           state.tracks.push(track);
           state.activeTasks.push(json.taskId);
@@ -269,8 +271,12 @@
                 state.tracks[trackIdx].lyrics = first.prompt || first.lyric;
                 state.tracks[trackIdx].id = first.id || state.tracks[trackIdx].id;
 
-                // Request WAV conversion then auto-save
-                requestWavConversion(trackIdx, taskId);
+                // Request WAV conversion if format is wav, otherwise save MP3 directly
+                if (state.tracks[trackIdx].format === 'wav') {
+                  requestWavConversion(trackIdx, taskId);
+                } else {
+                  autoSaveTrack(trackIdx);
+                }
 
                 // Add additional tracks from the same task (Suno generates 2 per task)
                 for (let si = 1; si < sunoData.length; si++) {
@@ -291,8 +297,14 @@
                     state.tracks.push(extraTrack);
                     const newIdx = state.tracks.length - 1;
                     addTrackToPlaylist(extraTrack, newIdx);
-                    // Request WAV for extra tracks too
-                    if (extraTrack.audioUrl) requestWavConversion(newIdx, taskId);
+                    // Request WAV for extra tracks too (if format is wav)
+                    if (extraTrack.audioUrl) {
+                      if (state.tracks[trackIdx].format === 'wav') {
+                        requestWavConversion(newIdx, taskId);
+                      } else {
+                        autoSaveTrack(newIdx);
+                      }
+                    }
                   }
                 }
               } else {
@@ -401,6 +413,7 @@
     DOM.promptInput.value = '';
     DOM.songCount.value = '1';
     DOM.modelSelect.value = 'V5_5';
+    DOM.formatSelect.value = 'wav';
     DOM.playlistList.innerHTML = '';
     DOM.playlistEmpty.classList.remove('hidden');
     DOM.trackCount.textContent = '0 tracks';
@@ -408,7 +421,7 @@
 
     // Reset player
     DOM.playerTitle.textContent = 'No track selected';
-    DOM.playerSubtitle.textContent = 'Get Music';
+    DOM.playerSubtitle.textContent = 'Get Music From Suno';
     DOM.playerCurrentTime.textContent = '0:00';
     DOM.playerDuration.textContent = '0:00';
     setSeekPosition(0);
@@ -477,7 +490,9 @@
 
     const wavBadge = track.wavReady
       ? `<span class="playlist-item-wav" title="WAV format">WAV</span>`
-      : '';
+      : (track.format === 'mp3' && track.status === 'success'
+        ? `<span class="playlist-item-wav playlist-item-mp3" title="MP3 format">MP3</span>`
+        : '');
 
     return `
       <span class="playlist-item-index">${index + 1}</span>
@@ -524,6 +539,9 @@
     if (track.imageUrl) {
       DOM.playerArt.innerHTML = `<img src="${track.imageUrl}" alt="${track.title}">`;
     }
+
+    // Update format badge
+    DOM.formatBadge.textContent = track.wavReady ? 'WAV' : 'MP3';
   }
 
   function togglePlay() {
@@ -540,12 +558,13 @@
     if (state.isPlaying) {
       audio.pause();
       state.isPlaying = false;
+      updatePlayPauseIcon();
     } else {
       audio.play().then(() => {
         state.isPlaying = true;
+        updatePlayPauseIcon();
       }).catch(() => {});
     }
-    updatePlayPauseIcon();
   }
 
   function prevTrack() {

@@ -1,10 +1,10 @@
-# GEMINI.md — Get Music
+# GEMINI.md — Get Music From Suno
 
 ## Project Context
-This is **Get Music** — a web-based Suno AI music generator application.
+This is **Get Music From Suno** — a web-based Suno AI music generator application.
 
 ## Version
-**1.1.0**
+**1.2.0**
 
 ## Quick Facts
 - Language: JavaScript (Node.js backend + Vanilla frontend)
@@ -23,7 +23,7 @@ This is **Get Music** — a web-based Suno AI music generator application.
 | `.env` | `SUNO_API_KEY`, `SUNO_API_BASE`, `PORT` |
 
 ## Rules
-1. **Versioning:** Semantic versioning (MAJOR.MINOR.PATCH). Current: `1.1.0`
+1. **Versioning:** Semantic versioning (MAJOR.MINOR.PATCH). Current: `1.2.0`
 2. **API Key:** Always stored in `.env`, referenced via `process.env`
 3. **No global JS:** Frontend uses IIFE pattern
 4. **CSS Variables:** All colors/sizes defined as CSS custom properties in `:root`
@@ -46,6 +46,9 @@ npm run dev
 - [x] Double-click to play tracks
 - [x] Mini player: play/pause, prev/next, rewind/forward 10s, seek bar (mouse drag), mute/unmute
 - [x] WAV format download via API conversion pipeline (MP3 fallback)
+- [x] Download format selector (WAV/MP3) side-by-side with model selector
+- [x] Dynamic format badge in player and playlist (WAV/MP3)
+- [x] Correct play/pause icon toggling synced to audio state
 - [x] Full-width interactive seek bar with thumb drag
 - [x] Reset button clears everything
 - [x] API balance display in header

@@ -360,6 +360,12 @@ ul { list-style: none; }
   animation: fade-in .3s var(--ease) both;
 }
 
+.playlist-item-mp3 {
+  background: rgba(52, 211, 153, .15);
+  border: 1px solid rgba(52, 211, 153, .3);
+  color: var(--accent-green);
+}
+
 /* ---------- Controls Panel ---------- */
 .controls-body {
   flex: 1;
@@ -438,6 +444,23 @@ ul { list-style: none; }
 }
 .count-input::-webkit-inner-spin-button,
 .count-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* Model & Format Selectors Row */
+.selectors-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.selector-group:last-child .model-select-wrapper {
+  min-width: 100px;
+}
 
 /* Model Select */
 .model-select-wrapper {

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Get Music — AI-powered music generator using Suno API. Create unique songs with a premium interface.">
-  <title>Get Music — AI Music Generator</title>
+  <meta name="description" content="Get Music From Suno — AI-powered music generator using Suno API. Create unique songs with a premium interface.">
+  <title>Get Music From Suno — AI Music Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,7 +28,7 @@
             </defs>
           </svg>
         </div>
-        <h1 class="logo-text">Get Music</h1>
+        <h1 class="logo-text">Get Music From Suno</h1>
       </div>
     </div>
     <div class="header-right">
@@ -39,7 +39,7 @@
         </svg>
         <span id="balance-value">Loading...</span>
       </div>
-      <span class="version-badge">v1.1.0</span>
+      <span class="version-badge">v1.2.0</span>
     </div>
   </header>
 
@@ -102,18 +102,34 @@
           <button class="count-btn" id="count-plus" title="Increase">+</button>
         </div>
 
-        <!-- Model selector -->
-        <label class="field-label" for="model-select">Model</label>
-        <div class="model-select-wrapper">
-          <select id="model-select" class="model-select">
-            <option value="V5_5" selected>Suno V5.5 — Latest</option>
-            <option value="V4_5ALL">Suno V4.5</option>
-            <option value="V4">Suno V4</option>
-            <option value="V3_5">Suno V3.5</option>
-          </select>
-          <svg class="model-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
+        <!-- Model & Format selectors (side by side) -->
+        <div class="selectors-row">
+          <div class="selector-group">
+            <label class="field-label" for="model-select">Model</label>
+            <div class="model-select-wrapper">
+              <select id="model-select" class="model-select">
+                <option value="V5_5" selected>Suno V5.5 — Latest</option>
+                <option value="V4_5ALL">Suno V4.5</option>
+                <option value="V4">Suno V4</option>
+                <option value="V3_5">Suno V3.5</option>
+              </select>
+              <svg class="model-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <div class="selector-group">
+            <label class="field-label" for="format-select">Format</label>
+            <div class="model-select-wrapper">
+              <select id="format-select" class="model-select">
+                <option value="wav" selected>WAV</option>
+                <option value="mp3">MP3</option>
+              </select>
+              <svg class="model-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
         </div>
 
         <!-- Action buttons -->
@@ -171,7 +187,7 @@
         </div>
         <div class="player-meta">
           <span class="player-title" id="player-title">No track selected</span>
-          <span class="player-subtitle" id="player-subtitle">Get Music</span>
+          <span class="player-subtitle" id="player-subtitle">Get Music From Suno</span>
         </div>
       </div>
 

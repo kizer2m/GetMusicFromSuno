@@ -1,11 +1,11 @@
-# CLAUDE.md — Get Music
+# CLAUDE.md — Get Music From Suno
 
 ## Project Overview
-**Get Music** is a Suno AI music generator with a premium graphical interface.
+**Get Music From Suno** is a Suno AI music generator with a premium graphical interface.
 It connects to the Suno API via [sunoapi.org](https://api.sunoapi.org) to generate music from text prompts.
 
 ## Version
-**1.1.0**
+**1.2.0**
 
 ## Tech Stack
 - **Backend:** Node.js + Express.js
