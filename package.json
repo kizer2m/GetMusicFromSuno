@@ -8,18 +8,31 @@
     "dev": "node server.js"
   },
   "keywords": [
-    "suno", "suno-api", "suno-ai",
-    "ai-music", "ai-music-generator", "ai-song-generator",
-    "music-generator", "text-to-music", "music-creation",
-    "wav-converter", "mp3-download", "audio-player",
-    "web-audio", "self-hosted", "nodejs", "express",
-    "vanilla-javascript", "open-source"
+    "suno",
+    "suno-api",
+    "suno-ai",
+    "ai-music",
+    "ai-music-generator",
+    "ai-song-generator",
+    "music-generator",
+    "text-to-music",
+    "music-creation",
+    "wav-converter",
+    "mp3-download",
+    "audio-player",
+    "web-audio",
+    "self-hosted",
+    "nodejs",
+    "express",
+    "vanilla-javascript",
+    "open-source"
   ],
   "author": "Edward",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "node-fetch": "^2.7.0"
   }
 }

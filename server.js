@@ -9,6 +9,16 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 
+// Polyfill fetch for Node.js < 18
+if (typeof globalThis.fetch === 'undefined') {
+  try {
+    globalThis.fetch = require('node-fetch');
+  } catch (e) {
+    console.error('❌ fetch is not available. Install node-fetch: npm install node-fetch@2');
+    process.exit(1);
+  }
+}
+
 const app = express();
 const pkg = require('./package.json');
 const PORT = process.env.PORT || 3000;
