@@ -1,6 +1,6 @@
 # 🎵 Get Music From Suno — AI Music Generator
 
-[![Version](https://img.shields.io/badge/version-1.6.1-purple.svg)](https://github.com/kizer2m/GetMusicFromSuno)
+[![Version](https://img.shields.io/badge/version-1.6.2-purple.svg)](https://github.com/kizer2m/GetMusicFromSuno)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-brightgreen.svg)](https://nodejs.org/)
 [![Suno API](https://img.shields.io/badge/Suno_API-v5.5-blue.svg)](https://sunoapi.org)
@@ -35,6 +35,7 @@
 | **Dark / Light Theme** | Toggle with sun/moon icon, persists in browser |
 | **Real-time Progress** | Live progress bar with status updates |
 | **API Credit Balance** | Monitor remaining Suno API credits |
+| **Detailed Console Logging** | Track info, tags, duration, model, watermark removal status |
 | **Cross-platform** | Windows (`start.bat`) + macOS/Linux (`start.sh`) |
 | **No Build Step** | Pure vanilla HTML/CSS/JS — just `npm start` |
 
@@ -179,6 +180,14 @@ GetMusicFromSuno/
 ---
 
 ## 📋 Changelog
+
+### v1.6.2
+- Enhanced server console logging for API status polling
+- Detailed track info: title, duration, tags, model name, creation time
+- Watermark removal status log (source vs processed audio URL comparison)
+- Task type and generation parameters displayed in console
+- Error details (errorCode + errorMessage) logged for failed tasks
+- All status transitions logged: PENDING, TEXT_SUCCESS, SUCCESS, FIRST_SUCCESS, errors
 
 ### v1.6.1
 - Custom model dropdown with hover tooltips showing model descriptions

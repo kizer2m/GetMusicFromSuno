@@ -1,6 +1,6 @@
 {
   "name": "get-music",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "AI Music Generator — Generate songs from text prompts using Suno API. Self-hosted web app with WAV/MP3 download, audio player, dark/light theme. Node.js + Vanilla JS.",
   "main": "server.js",
   "scripts": {

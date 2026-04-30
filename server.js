@@ -149,16 +149,66 @@ app.get('/api/status/:taskId', async (req, res) => {
     });
 
     if (result.code === 200) {
-      const sunoData = result.data?.response?.sunoData;
-      if (sunoData && sunoData.length > 0) {
-        const statusFlag = result.data?.status || result.data?.successFlag;
-        if (statusFlag === 'SUCCESS' || statusFlag === 'FIRST_SUCCESS') {
-          logSuccess('Status', `Task ${req.params.taskId.slice(0, 12)}... → ${C.bold}${statusFlag}${C.reset} (${sunoData.length} track${sunoData.length > 1 ? 's' : ''})`);
+      const d = result.data;
+      const statusFlag = d?.status || d?.successFlag;
+      const taskType = d?.type || 'UNKNOWN';
+      const sunoData = d?.response?.sunoData;
+
+      // Parse generation params
+      let parsedParam = {};
+      try { if (d?.param) parsedParam = JSON.parse(d.param); } catch {}
+
+      // Log task-level info on status change
+      if (statusFlag === 'SUCCESS' || statusFlag === 'FIRST_SUCCESS') {
+        logSuccess('Status', `Task ${req.params.taskId.slice(0, 12)}... → ${C.bold}${statusFlag}${C.reset}`);
+        logInfo('Status', `Type: ${C.bold}${taskType}${C.reset} | Model: ${C.bold}${parsedParam.model || 'N/A'}${C.reset}`);
+
+        if (sunoData && sunoData.length > 0) {
+          logInfo('Status', `Tracks: ${C.bold}${sunoData.length}${C.reset}`);
+
           sunoData.forEach((t, i) => {
-            logMusic('Track', `#${i + 1} "${t.title || 'untitled'}" | ID: ${(t.id || '').slice(0, 8)}`);
+            const dur = t.duration ? `${Math.floor(t.duration / 60)}:${String(Math.floor(t.duration % 60)).padStart(2, '0')}` : '?';
+            logMusic('Track', `#${i + 1} "${t.title || 'untitled'}" | ${dur} | ${C.dim}ID: ${(t.id || '').slice(0, 12)}${C.reset}`);
+
+            // Tags & model
+            if (t.tags) logInfo('  Tags', `${t.tags}`);
+            if (t.modelName) logInfo('  Model', `${t.modelName}`);
+            if (t.createTime) logInfo('  Created', `${t.createTime}`);
+
+            // Watermark removal log — compare source vs processed URLs
+            const hasSourceAudio = t.sourceAudioUrl || t.source_audio_url;
+            const hasProcessedAudio = t.audioUrl || t.audio_url;
+            if (hasSourceAudio && hasProcessedAudio && hasSourceAudio !== hasProcessedAudio) {
+              logSuccess('  Watermark', `${C.green}Removed${C.reset} — clean audio URL ready`);
+            } else if (hasProcessedAudio) {
+              logInfo('  Watermark', `Audio is watermark-free`);
+            }
           });
         }
+
+        // Error info (if any)
+        if (d?.errorCode || d?.errorMessage) {
+          logWarn('Status', `Error: [${d.errorCode}] ${d.errorMessage}`);
+        }
+
+      } else if (statusFlag === 'TEXT_SUCCESS') {
+        logStep('Status', `Task ${req.params.taskId.slice(0, 12)}... → ${C.bold}TEXT_SUCCESS${C.reset} (lyrics ready, audio generating...)`);
+
+      } else if (
+        statusFlag === 'CREATE_TASK_FAILED' ||
+        statusFlag === 'GENERATE_AUDIO_FAILED' ||
+        statusFlag === 'SENSITIVE_WORD_ERROR' ||
+        statusFlag === 'CALLBACK_EXCEPTION'
+      ) {
+        logError('Status', `Task ${req.params.taskId.slice(0, 12)}... → ${C.bold}${statusFlag}${C.reset}`);
+        if (d?.errorCode || d?.errorMessage) {
+          logError('Status', `Error: [${d.errorCode || 'N/A'}] ${d.errorMessage || 'No details'}`);
+        }
+
+      } else if (statusFlag === 'PENDING') {
+        logStep('Status', `Task ${req.params.taskId.slice(0, 12)}... → ${C.dim}PENDING${C.reset}`);
       }
+
       return res.json({ success: true, data: result.data });
     }
     return res.status(400).json({ success: false, error: result.msg || 'Status check failed' });
