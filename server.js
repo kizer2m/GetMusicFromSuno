@@ -172,8 +172,18 @@ app.get('/api/status/:taskId', async (req, res) => {
 
             // Tags & model
             if (t.tags) logInfo('  Tags', `${t.tags}`);
-            if (t.modelName) logInfo('  Model', `${t.modelName}`);
-            if (t.createTime) logInfo('  Created', `${t.createTime}`);
+            if (t.modelName) {
+              const modelFriendly = {
+                'chirp-fenix': 'V5.5', 'chirp-crow': 'V5',
+                'chirp-bluejay': 'V4.5 Plus', 'chirp-auk-turbo': 'V4.5 All',
+                'chirp-auk': 'V4.5', 'chirp-v4': 'V4', 'chirp-v3-5': 'V3.5',
+              }[t.modelName] || t.modelName;
+              logInfo('  Model', `${modelFriendly} (${t.modelName})`);
+            }
+            if (t.createTime) {
+              const ts = typeof t.createTime === 'number' ? new Date(t.createTime).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'medium' }) : t.createTime;
+              logInfo('  Created', `${ts}`);
+            }
 
             // Watermark removal log — compare source vs processed URLs
             const hasSourceAudio = t.sourceAudioUrl || t.source_audio_url;
